@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Audio - Diagnóstico</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0f172a;
+            color: #f1f5f9;
+            font-family: monospace;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #6366f1;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .log-box {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-line {
+            padding: 0.25rem 0;
+        }
+        .log-success { color: #10b981; }
+        .log-error { color: #ef4444; }
+        .log-info { color: #3b82f6; }
+        .log-warning { color: #f59e0b; }
+        
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #7c8ff8;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+        
+        .info-box {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid #6366f1;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .divider {
+            border-top: 1px solid #334155;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 Audio Debug - Diagnóstico Completo</h1>
+        
+        <div class="info-box">
+            <strong>Instrucciones:</strong>
+            <ul style="margin-top: 0.5rem; margin-left: 1rem;">
+                <li>1. Presiona cada botón en orden</li>
+                <li>2. Lee los mensajes en el LOG</li>
+                <li>3. Envíame las respuestas/errores que veas</li>
+            </ul>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="checkBrowser()">1. Verificar Navegador</button>
+            <button onclick="checkAudioAPI()">2. Verificar Web Audio API</button>
+            <button onclick="playSimpleBeep()">3. Sonido Simple</button>
+            <button onclick="playLongBeep()">4. Sonido Largo (1s)</button>
+            <button onclick="playMultiple()">5. Múltiples Beeps</button>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <h3 style="color: #6366f1; margin-bottom: 1rem;">📋 LOG:</h3>
+        <div id="log" class="log-box">
+            <div class="log-line log-info">[INICIADO] Página cargada...</div>
+        </div>
+    </div>
+
+    <script>
+        const logEl = document.getElementById('log');
+        
+        function log(message, type = 'info') {
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(`[${type}] ${message}`);
+        }
+        
+        function checkBrowser() {
+            log('Verificando navegador...', 'info');
+            log(`User Agent: ${navigator.userAgent}`, 'info');
+            
+            if (window.AudioContext || window.webkitAudioContext) {
+                log('✅ Web Audio API está disponible', 'success');
+            } else {
+                log('❌ Web Audio API NO está disponible', 'error');
+            }
+            
+            if (navigator.permissions) {
+                log('✅ Permissions API disponible', 'success');
+            }
+            
+            if (navigator.mediaDevices) {
+                log('✅ Media Devices API disponible', 'success');
+            }
+        }
+        
+        function checkAudioAPI() {
+            log('Verificando Web Audio API en detalle...', 'info');
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                log(`✅ AudioContext creado exitosamente`, 'success');
+                log(`Estado: ${audioContext.state}`, 'info');
+                log(`Sample rate: ${audioContext.sampleRate}Hz`, 'info');
+                
+                if (audioContext.state === 'suspended') {
+                    log('⚠️ AudioContext está SUSPENDED - intentando reanudar...', 'warning');
+                    audioContext.resume()
+                        .then(() => log('✅ AudioContext reanudado correctamente', 'success'))
+                        .catch(e => log(`❌ Error al reanudar: ${e.message}`, 'error'));
+                }
+                
+                // Probar crear un oscillator
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                log('✅ Oscillator y GainNode creados', 'success');
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                log('✅ Conexiones establecidas correctamente', 'success');
+                
+            } catch (e) {
+                log(`❌ Error: ${e.message}`, 'error');
+            }
+        }
+        
+        function playSimpleBeep() {
+            log('Intentando reproducir BEEP SIMPLE...', 'info');
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                log(`AudioContext estado: ${audioContext.state}`, 'info');
+                
+                // Resume si está suspended
+                if (audioContext.state === 'suspended') {
+                    log('Reanudando AudioContext...', 'warning');
+                    audioContext.resume()
+                        .then(() => log('✅ Reanudado', 'success'))
+                        .catch(e => log(`❌ Error al reanudar: ${e}`, 'error'));
+                }
+                
+                const now = audioContext.currentTime;
+                const duration = 0.5; // 500ms
+                
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.frequency.value = 800;
+                osc.type = 'sine';
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                
+                osc.start(now);
+                osc.stop(now + duration);
+                
+                log(`✅ BEEP INICIADO: 800Hz por ${duration}s`, 'success');
+                log('🔊 ¿ESCUCHAS UN SONIDO?', 'success');
+                
+            } catch (e) {
+                log(`❌ Error: ${e.message}`, 'error');
+                log(`Stack: ${e.stack}`, 'error');
+            }
+        }
+        
+        function playLongBeep() {
+            log('Intentando reproducir BEEP LARGO (1 segundo)...', 'info');
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                const now = audioContext.currentTime;
+                const duration = 1.0; // 1 segundo - MÁS LARGO
+                
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.frequency.value = 1000;
+                osc.type = 'sine';
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                gain.gain.setValueAtTime(0.7, now); // Volumen más alto
+                gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                
+                osc.start(now);
+                osc.stop(now + duration);
+                
+                log(`✅ BEEP LARGO INICIADO: 1000Hz por 1 segundo`, 'success');
+                log('🔊 Este sonido debería ser más fácil de escuchar', 'success');
+                
+            } catch (e) {
+                log(`❌ Error: ${e.message}`, 'error');
+            }
+        }
+        
+        function playMultiple() {
+            log('Reproduciendo MÚLTIPLES BEEPS en secuencia...', 'info');
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                const frequencies = [600, 800, 1000];
+                let delay = 0;
+                
+                frequencies.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const now = audioContext.currentTime;
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        
+                        osc.frequency.value = freq;
+                        osc.type = 'sine';
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        
+                        gain.gain.setValueAtTime(0.5, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                        
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                        
+                        log(`  Beep ${i+1}: ${freq}Hz`, 'info');
+                    }, delay);
+                    
+                    delay += 400;
+                });
+                
+                log('✅ 3 BEEPS INICIADOS en secuencia', 'success');
+                log('🔊 Deberías escuchar 3 tonos progresivos', 'success');
+                
+            } catch (e) {
+                log(`❌ Error: ${e.message}`, 'error');
+            }
+        }
+        
+        // Log inicial
+        log('Página lista. Haz clic en los botones...', 'success');
+    </script>
+</body>
+</html>
