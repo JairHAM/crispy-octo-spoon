@@ -195,21 +195,23 @@
             padding: 0.35rem 0.65rem;
             border-radius: 4px;
         }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+
+        .card-header {
+            background: var(--dark-surface) !important;
+            border-bottom: 1px solid var(--dark-border) !important;
+        }
+
+        .card-header h5 {
+            color: var(--dark-text) !important;
+        }
+
+        .card-header small {
+            color: var(--dark-text-secondary) !important;
         }
         
         @keyframes slideIn {
             from {
-                transform: translateX(400px);
+                transform: translateX(100%);
                 opacity: 0;
             }
             to {
@@ -249,11 +251,11 @@
     <div class="container-fluid py-4">
         <!-- Formulario -->
         <div class="card mb-4">
-            <div class="card-header bg-white border-bottom">
+            <div class="card-header">
                 <h5 class="mb-0">
                     <i class="ri-add-circle-line"></i> Nuevo Producto
                 </h5>
-                <small class="text-muted">Crea o edita productos del menú</small>
+                <small>Crea o edita productos del menú</small>
             </div>
             <div class="card-body">
                 <form id="product-form" class="row g-3">
@@ -310,11 +312,11 @@
 
         <!-- Listado de productos -->
         <div class="card">
-            <div class="card-header bg-white border-bottom">
+            <div class="card-header">
                 <h5 class="mb-0">
                     <i class="ri-list-check-line"></i> Inventario
                 </h5>
-                <small class="text-muted">Gestiona todos los productos</small>
+                <small>Gestiona todos los productos</small>
             </div>
             <div class="card-body">
                 <div id="products-container" class="row g-3">
