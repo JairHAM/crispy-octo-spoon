@@ -5,19 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Restaurant Pro">
-    <title>Panel Administrativo - Restaurante</title>
+    <meta name="apple-mobile-web-app-title" content="El Enkanto">
+    <title>Panel Administrativo - El Enkanto</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css">
     <link rel="stylesheet" href="admin.css">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%236366f1' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='65' font-size='60' text-anchor='middle' fill='white'%3E%F0%9F%8D%BD%3C/text%3E%3C/svg%3E">
     <meta name="theme-color" content="#0f172a">
     <style>
-        /* Prevenir zoom en inputs en iOS */
         input, select, textarea {
             font-size: 16px !important;
         }
         
-        /* Optimizaciones para notch en iPhone */
         @supports (padding: max(0px)) {
             body {
                 padding-left: max(1rem, env(safe-area-inset-left));
@@ -27,12 +25,11 @@
     </style>
 </head>
 <body>
-    <!-- Navigation Header -->
     <header class="navbar">
         <div class="navbar-container">
             <div class="navbar-brand">
                 <i class="ri-restaurant-2-line"></i>
-                <span>RestaurantPro</span>
+                <span>El Enkanto</span>
             </div>
             <div class="navbar-stats">
                 <div class="stat-item">
@@ -43,9 +40,7 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="container">
-        <!-- Form Section -->
         <section class="form-section card">
             <div class="section-header">
                 <div>
@@ -123,7 +118,6 @@
             </form>
         </section>
 
-        <!-- Products List Section -->
         <section class="list-section card">
             <div class="section-header">
                 <div>
@@ -145,7 +139,6 @@
         </section>
     </main>
 
-    <!-- Notification Toast -->
     <div id="notification" class="toast" role="alert" aria-live="polite">
         <div class="toast-content">
             <i class="ri-check-line"></i>
@@ -153,7 +146,6 @@
         </div>
     </div>
 
-    <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay" style="display: none;">
         <div class="spinner-container">
             <div class="spinner"></div>

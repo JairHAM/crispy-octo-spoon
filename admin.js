@@ -1,406 +1,246 @@
-// admin.js - Lógica mejorada para el panel administrativo
+const API = 'https://crispy-octo-spoon.onrender.com/api/productos';
+const DOM = {
+    form: document.getElementById('product-form'),
+    submitBtn: document.getElementById('submit-button'),
+    cancelBtn: document.getElementById('cancel-button'),
+    container: document.getElementById('products-container'),
+    productId: document.getElementById('product-id'),
+    count: document.getElementById('product-count'),
+    badge: document.getElementById('edit-mode-badge'),
+    loading: document.getElementById('loading-overlay'),
+    toast: document.getElementById('notification'),
+};
 
-const API_PRODUCTOS = 'https://crispy-octo-spoon.onrender.com/api/productos';
-
-// Elementos del DOM
-const form = document.getElementById('product-form');
-const submitButton = document.getElementById('submit-button');
-const cancelButton = document.getElementById('cancel-button');
-const productsContainer = document.getElementById('products-container');
-const productIdInput = document.getElementById('product-id');
-const productCountElement = document.getElementById('product-count');
-const editModeBadge = document.getElementById('edit-mode-badge');
-const loadingOverlay = document.getElementById('loading-overlay');
-const notification = document.getElementById('notification');
-
-let isEditMode = false;
+let isEdit = false;
 let isMobile = window.innerWidth <= 768;
+let pollInterval = null;
 
-// Detectar cambios de tamaño
-window.addEventListener('resize', () => {
-    isMobile = window.innerWidth <= 768;
-});
-
-// Manejar orientación en dispositivos móviles
+window.addEventListener('resize', () => { isMobile = window.innerWidth <= 768; });
 window.addEventListener('orientationchange', () => {
     isMobile = window.innerWidth <= 768;
-    // Pequeño delay para que se recalcule el layout
-    setTimeout(() => {
-        loadProducts();
-    }, 200);
+    setTimeout(() => loadProducts(), 200);
 });
 
-// ============================================================
-// FUNCIONES PRINCIPALES - CRUD
-// ============================================================
+function startPolling() {
+    if (pollInterval) return;
+    pollInterval = setInterval(() => {
+        fetch(API).then(r => r.json()).then(p => { 
+            renderProducts(p);
+            updateCount(p.length);
+        }).catch(e => console.log('Polling error:', e));
+    }, 5000);
+}
 
-/**
- * Carga y muestra todos los productos
- */
+function stopPolling() {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = null;
+}
+
 async function loadProducts() {
     try {
         setLoading(true);
-        const response = await fetch(API_PRODUCTOS);
-        
-        if (!response.ok) {
-            throw new Error('Error al obtener productos');
-        }
-
-        const products = await response.json();
+        const res = await fetch(API);
+        if (!res.ok) throw new Error('Error al cargar');
+        const products = await res.json();
         renderProducts(products);
-        updateProductCount(products.length);
-
-    } catch (error) {
-        console.error('Error al cargar productos:', error);
-        showNotification('No se pudieron cargar los productos.', true);
+        updateCount(products.length);
+    } catch (e) {
+        notify('No se pudieron cargar los productos', true);
     } finally {
         setLoading(false);
     }
 }
 
-/**
- * Renderiza los productos en el DOM
- */
 function renderProducts(products) {
-    productsContainer.innerHTML = '';
-
-    if (!products || products.length === 0) {
-        productsContainer.innerHTML = `
-            <div class="empty-state">
-                <i class="ri-inbox-line"></i>
-                <p>No hay productos aún</p>
-                <small>Crea tu primer producto usando el formulario superior</small>
-            </div>
-        `;
+    DOM.container.innerHTML = '';
+    if (!products?.length) {
+        DOM.container.innerHTML = `<div class="empty-state">
+            <i class="ri-inbox-line"></i>
+            <p>No hay productos</p>
+            <small>Crea tu primer producto</small>
+        </div>`;
         return;
     }
-
-    products.forEach(product => {
-        const card = createProductCard(product);
-        productsContainer.appendChild(card);
-    });
+    products.forEach(p => DOM.container.appendChild(createCard(p)));
 }
 
-/**
- * Crea una tarjeta de producto
- */
-function createProductCard(product) {
+function createCard(p) {
     const card = document.createElement('div');
-    card.className = 'product-card';
+    const available = p.disponible ?? p.disponibilidad ?? true;
+    const emojis = { 'Entrada': '🥗', 'Plato Principal': '🍽️', 'Bebida': '🥤', 'Postre': '🍰', 'Otro': '📦' };
     
-    // Determinar disponibilidad
-    const isAvailable = (product.disponible !== undefined)
-        ? product.disponible
-        : (product.disponibilidad !== undefined ? product.disponibilidad : true);
-
-    const statusText = isAvailable ? 'Disponible' : 'Agotado';
-    const statusClass = isAvailable ? '' : 'unavailable';
-    const statusIcon = isAvailable ? 'ri-check-circle-line' : 'ri-close-circle-line';
-
-    // Obtener emoji de categoría
-    const categoryEmoji = {
-        'Entrada': '🥗',
-        'Plato Principal': '🍽️',
-        'Bebida': '🥤',
-        'Postre': '🍰',
-        'Otro': '📦'
-    };
-    const emoji = categoryEmoji[product.categoria] || '📦';
-
+    card.className = 'product-card';
     card.innerHTML = `
         <div class="product-header">
-            <div>
-                <h3 class="product-title">${escapeHtml(product.nombre)}</h3>
-                <div class="product-category">${emoji} ${product.categoria}</div>
-            </div>
+            <h3 class="product-title">${escape(p.nombre)}</h3>
+            <div class="product-category">${emojis[p.categoria] || '📦'} ${p.categoria}</div>
         </div>
-        
-        <div class="product-price">
-            <span class="product-price-value">S/. ${product.precio.toFixed(2)}</span>
+        <div class="product-price">S/. ${p.precio.toFixed(2)}</div>
+        <div class="product-status ${available ? '' : 'unavailable'}">
+            <i class="${available ? 'ri-check-circle-line' : 'ri-close-circle-line'}"></i>
+            ${available ? 'Disponible' : 'Agotado'}
         </div>
-        
-        <div class="product-status ${statusClass}">
-            <i class="${statusIcon}"></i>
-            <span>${statusText}</span>
-        </div>
-        
         <div class="product-actions">
-            <button class="btn btn-edit btn-sm" onclick="fillFormForEdit(event, '${product._id}')">
+            <button class="btn btn-edit btn-sm" onclick="editProduct('${p._id}')">
                 <i class="ri-edit-line"></i> Editar
             </button>
-            <button class="btn btn-delete btn-sm" onclick="deleteProduct(event, '${product._id}')">
+            <button class="btn btn-delete btn-sm" onclick="deleteProduct('${p._id}')">
                 <i class="ri-delete-bin-line"></i> Eliminar
             </button>
         </div>
     `;
-
     return card;
 }
 
-/**
- * Escapa caracteres HTML para evitar XSS
- */
-function escapeHtml(text) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
+function escape(text) {
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-/**
- * Maneja el envío del formulario (CREATE/UPDATE)
- */
-form.addEventListener('submit', async (e) => {
+DOM.form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const data = {
+        nombre: document.getElementById('nombre').value.trim(),
+        precio: parseFloat(document.getElementById('precio').value),
+        categoria: document.getElementById('categoria').value,
+        disponible: document.getElementById('disponible').checked,
+    };
 
-    const id = productIdInput.value;
-    const nombre = document.getElementById('nombre').value.trim();
-    const precio = parseFloat(document.getElementById('precio').value);
-    const categoria = document.getElementById('categoria').value;
-    const disponible = document.getElementById('disponible').checked;
-
-    // Validación básica
-    if (!nombre || isNaN(precio) || precio < 0 || !categoria) {
-        showNotification('Por favor completa todos los campos correctamente.', true);
+    if (!data.nombre || isNaN(data.precio) || data.precio < 0 || !data.categoria) {
+        notify('Completa todos los campos', true);
         return;
     }
 
-    const productData = { nombre, precio, categoria, disponible };
-
     try {
-        let url = API_PRODUCTOS;
-        let method = 'POST';
-        let actionText = 'creado';
-
-        if (id) {
-            url = `${API_PRODUCTOS}/${id}`;
-            method = 'PUT';
-            actionText = 'actualizado';
-        }
-
-        submitButton.disabled = true;
+        DOM.submitBtn.disabled = true;
         setLoading(true);
 
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(productData)
+        const id = DOM.productId.value;
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API}/${id}` : API;
+
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
         });
 
-        if (!response.ok) {
-            let errorMsg = 'Error desconocido';
-            try {
-                const errorData = await response.json();
-                errorMsg = errorData.mensaje || errorData.error || errorMsg;
-            } catch (e) {}
-            throw new Error(errorMsg);
-        }
-
-        showNotification(`Producto ${actionText} exitosamente.`, false);
-        form.reset();
+        if (!res.ok) throw new Error('Error al guardar');
+        
+        notify(`Producto ${id ? 'actualizado' : 'creado'} ✓`, false);
+        DOM.form.reset();
         resetForm();
         loadProducts();
-        
-        // Scroll al inicio en mobile
-        if (isMobile) {
-            setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 300);
-        }
 
-    } catch (error) {
-        console.error('Error al guardar:', error);
-        showNotification(error.message || 'Error al guardar el producto', true);
+        if (isMobile) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
+    } catch (e) {
+        notify(e.message || 'Error al guardar', true);
     } finally {
-        submitButton.disabled = false;
+        DOM.submitBtn.disabled = false;
         setLoading(false);
     }
 });
 
-/**
- * Llena el formulario para editar un producto
- */
-function fillFormForEdit(e, productId) {
-    if (e) e.preventDefault();
+async function editProduct(id) {
+    try {
+        const res = await fetch(API);
+        const products = await res.json();
+        const p = products.find(x => x._id === id);
+        if (!p) throw new Error('Producto no encontrado');
 
-    // Obtener todos los productos para encontrar el que queremos editar
-    fetch(API_PRODUCTOS)
-        .then(r => r.json())
-        .then(products => {
-            const product = products.find(p => p._id === productId);
-            if (!product) throw new Error('Producto no encontrado');
+        DOM.productId.value = p._id;
+        document.getElementById('nombre').value = p.nombre;
+        document.getElementById('precio').value = p.precio;
+        document.getElementById('categoria').value = p.categoria;
+        document.getElementById('disponible').checked = p.disponible ?? p.disponibilidad ?? false;
 
-            // Llenar el formulario
-            productIdInput.value = product._id;
-            document.getElementById('nombre').value = product.nombre;
-            document.getElementById('precio').value = product.precio;
-            document.getElementById('categoria').value = product.categoria;
-            
-            const isAvailable = (product.disponible !== undefined)
-                ? product.disponible
-                : (product.disponibilidad !== undefined ? product.disponibilidad : false);
-            document.getElementById('disponible').checked = isAvailable;
+        isEdit = true;
+        DOM.submitBtn.textContent = '💾 Guardar Cambios';
+        DOM.badge.style.display = 'flex';
+        DOM.cancelBtn.style.display = 'inline-flex';
 
-            // Cambiar modo edición
-            isEditMode = true;
-            submitButton.textContent = '💾 Guardar Cambios';
-            editModeBadge.style.display = 'flex';
-            cancelButton.style.display = 'inline-flex';
-            
-            // Scroll al formulario con offset para navbar en mobile
-            if (isMobile) {
-                setTimeout(() => {
-                    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    // Pequeño delay y scroll adicional para compensar navbar sticky
-                    setTimeout(() => {
-                        window.scrollBy({ top: -60, behavior: 'smooth' });
-                    }, 500);
-                }, 300);
-            } else {
-                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            showNotification('No se pudo cargar el producto para editar', true);
-        });
+        if (isMobile) {
+            setTimeout(() => {
+                DOM.form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => window.scrollBy({ top: -60, behavior: 'smooth' }), 500);
+            }, 300);
+        } else {
+            DOM.form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    } catch (e) {
+        notify('No se pudo cargar el producto', true);
+    }
 }
 
-/**
- * Cancela la edición
- */
-cancelButton.addEventListener('click', resetForm);
+DOM.cancelBtn.addEventListener('click', resetForm);
 
 function resetForm() {
-    form.reset();
-    productIdInput.value = '';
-    submitButton.textContent = '✅ Crear Producto';
-    editModeBadge.style.display = 'none';
-    cancelButton.style.display = 'none';
-    isEditMode = false;
+    DOM.form.reset();
+    DOM.productId.value = '';
+    DOM.submitBtn.textContent = '✅ Crear Producto';
+    DOM.badge.style.display = 'none';
+    DOM.cancelBtn.style.display = 'none';
+    isEdit = false;
 }
 
-/**
- * Elimina un producto
- */
-async function deleteProduct(e, id) {
-    if (e) e.preventDefault();
-
-    const confirmDelete = confirm('¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.');
-    if (!confirmDelete) return;
+async function deleteProduct(id) {
+    if (!confirm('¿Eliminar este producto? No se puede deshacer.')) return;
 
     try {
         setLoading(true);
-
-        const response = await fetch(`${API_PRODUCTOS}/${id}`, {
-            method: 'DELETE'
-        });
-
-        if (!response.ok) {
-            let errorMsg = 'Error al eliminar';
-            try {
-                const errorData = await response.json();
-                errorMsg = errorData.error || errorMsg;
-            } catch (e) {}
-            throw new Error(errorMsg);
-        }
-
-        showNotification('Producto eliminado exitosamente.', false);
+        const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Error al eliminar');
+        
+        notify('Producto eliminado ✓', false);
         loadProducts();
-
-    } catch (error) {
-        console.error('Error al eliminar:', error);
-        showNotification(error.message || 'Error al eliminar el producto', true);
+    } catch (e) {
+        notify(e.message || 'Error al eliminar', true);
     } finally {
         setLoading(false);
     }
 }
 
-// ============================================================
-// FUNCIONES AUXILIARES - UI/UX
-// ============================================================
-
-/**
- * Muestra una notificación toast
- */
-function showNotification(message, isError = false, timeout = 3000) {
-    const toastMessage = document.getElementById('toast-message');
-    toastMessage.textContent = message;
+function notify(msg, isError = false, timeout = 3000) {
+    const toastMsg = document.getElementById('toast-message');
+    toastMsg.textContent = msg;
     
-    notification.classList.remove('error', 'success', 'show');
-    notification.classList.add('show', isError ? 'error' : 'success');
+    DOM.toast.classList.remove('error', 'success', 'show');
+    DOM.toast.classList.add('show', isError ? 'error' : 'success');
     
-    const icon = notification.querySelector('i');
-    if (isError) {
-        icon.className = 'ri-close-circle-line';
-    } else {
-        icon.className = 'ri-check-circle-line';
-    }
+    const icon = DOM.toast.querySelector('i');
+    icon.className = isError ? 'ri-close-circle-line' : 'ri-check-circle-line';
     
-    // Auto-dismiss
-    clearTimeout(showNotification._timeout);
-    showNotification._timeout = setTimeout(() => {
-        notification.classList.remove('show');
-    }, timeout);
+    clearTimeout(notify._timeout);
+    notify._timeout = setTimeout(() => DOM.toast.classList.remove('show'), timeout);
 }
 
-/**
- * Muestra/oculta el overlay de carga
- */
 function setLoading(on) {
     if (on) {
-        loadingOverlay.classList.add('show');
+        DOM.loading.classList.add('show');
         document.querySelectorAll('button').forEach(b => b.disabled = true);
     } else {
-        loadingOverlay.classList.remove('show');
-        document.querySelectorAll('button').forEach(b => {
-            b.disabled = false;
-        });
+        DOM.loading.classList.remove('show');
+        document.querySelectorAll('button').forEach(b => b.disabled = false);
     }
 }
 
-/**
- * Actualiza el contador de productos
- */
-function updateProductCount(count) {
-    if (productCountElement) {
-        productCountElement.textContent = count;
-    }
+function updateCount(count) {
+    if (DOM.count) DOM.count.textContent = count;
 }
 
-/**
- * Prevenir zoom en inputs en iOS
- */
 function preventIOSZoom() {
-    const inputs = document.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            // Prevenir zoom al enfocar input
-            setTimeout(() => {
-                document.body.scrollTop = 0;
-                document.documentElement.scrollTop = 0;
-            }, 500);
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('focus', () => {
+            setTimeout(() => { document.body.scrollTop = 0; document.documentElement.scrollTop = 0; }, 500);
         });
     });
 }
 
-// ============================================================
-// INICIALIZACIÓN
-// ============================================================
-
-// Cargar productos cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
     preventIOSZoom();
-    
-    // Agregar listener para enfocar en el nombre al cargar
-    setTimeout(() => {
-        document.getElementById('nombre').focus();
-    }, 300);
+    startPolling();
+    setTimeout(() => document.getElementById('nombre').focus(), 300);
+
+    window.addEventListener('beforeunload', stopPolling);
 });
