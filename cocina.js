@@ -12,6 +12,8 @@ async function loadOrders() {
     try {
         const res = await fetch(`${API}/pedidos`);
         orders = await res.json();
+        console.log('Total pedidos en BD:', orders.length);
+        console.log('Estados:', orders.map(o => o.estado));
         renderOrders();
         updateStats();
     } catch (e) {
@@ -118,9 +120,12 @@ async function changeStatus(orderId, newStatus) {
 }
 
 function updateStats() {
-    // Contar solo pedidos activos (no servidos)
-    const activeOrders = orders.filter(o => o.estado !== 'servido').length;
-    document.getElementById('order-count').textContent = activeOrders;
+    // Contar solo pedidos activos (pendiente, preparando, listo) - NO incluir servidos
+    const activeOrders = orders.filter(o => o.estado && o.estado !== 'servido').length;
+    const countElement = document.getElementById('order-count');
+    if (countElement) {
+        countElement.textContent = activeOrders;
+    }
 }
 
 function showToast(msg, isError = false) {
