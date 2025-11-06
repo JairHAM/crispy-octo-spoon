@@ -118,13 +118,8 @@ async function changeStatus(orderId, newStatus) {
 }
 
 function updateStats() {
-    const pending = orders.filter(o => o.estado === 'pendiente').length;
-    const preparing = orders.filter(o => o.estado === 'preparando').length;
-    const ready = orders.filter(o => o.estado === 'listo').length;
-    
-    document.getElementById('stat-pending').textContent = pending;
-    document.getElementById('stat-preparing').textContent = preparing;
-    document.getElementById('stat-ready').textContent = ready;
+    const totalOrders = orders.length;
+    document.getElementById('order-count').textContent = totalOrders;
 }
 
 function showToast(msg, isError = false) {

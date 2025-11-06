@@ -93,7 +93,6 @@ function renderMesas() {
 function selectMesa(mesa) {
     selectedMesa = mesa;
     cart = [];
-    updateSectionDisplay(`Mesa ${mesa}`);
     showStep('menu');
     renderProducts();
 }
@@ -296,14 +295,12 @@ function newOrder() {
     selectedMesa = null;
     cart = [];
     showStep('inicio');
-    updateSectionDisplay('');
 }
 
 function resetSelection() {
     selectedMesa = null;
     cart = [];
     showStep('inicio');
-    updateSectionDisplay('');
 }
 
 function showStep(step) {
@@ -311,24 +308,11 @@ function showStep(step) {
     document.getElementById(`step-${step}`).classList.add('active');
     
     const btnCarrito = document.getElementById('btn-carrito');
-    const btnSeguimiento = document.getElementById('btn-seguimiento');
     
     if (step === 'menu') {
         btnCarrito.style.display = 'block';
-        btnSeguimiento.style.display = 'block';
     } else {
         btnCarrito.style.display = 'none';
-        btnSeguimiento.style.display = 'none';
-    }
-}
-
-function updateSectionDisplay(section) {
-    const display = document.getElementById('section-display');
-    if (section) {
-        display.style.display = 'inline-flex';
-        document.getElementById('section-name').textContent = section;
-    } else {
-        display.style.display = 'none';
     }
 }
 
