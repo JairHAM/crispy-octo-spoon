@@ -2,6 +2,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors'); // Necesario para la conexión con GitHub Pages
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const morgan = require('morgan');
 require('dotenv').config(); 
 
 const app = express();
@@ -34,8 +39,21 @@ app.use(cors(corsOptions));
 // Asegurar que las solicitudes preflight OPTIONS sean respondidas
 app.options('*', cors(corsOptions));
 
-// Middleware para parsear JSON (DEBE IR ANTES DE LAS RUTAS)
-app.use(express.json()); 
+// SECURITY & PERFORMANCE MIDDLEWARE
+app.use(helmet());
+app.use(compression());
+app.use(mongoSanitize());
+// Logger (morgan) - usar en desarrollo
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
+
+// Rate limiter (básico)
+const limiter = rateLimit({ windowMs: 60 * 1000, max: 200 });
+app.use(limiter);
+
+// Middleware para parsear JSON con límite de tamaño
+app.use(express.json({ limit: '10kb' })); 
 // --- FIN DE CONFIGURACIÓN ---
 
 // Conexión a MongoDB
@@ -51,4 +69,13 @@ app.use('/api/productos', productosRouter);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
+
+// Manejo de errores global (simple)
+app.use((err, req, res, next) => {
+  console.error(err);
+  if (res.headersSent) return next(err);
+  const status = err.status || 500;
+  const msg = process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message;
+  res.status(status).json({ error: msg });
 });

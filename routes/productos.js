@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Producto = require('../models/Producto'); // Importamos el modelo 'Producto'
+const mongoose = require('mongoose');
 
 // 1. CREATE (POST /api/productos) - Crear un nuevo producto
 router.post('/', async (req, res) => {
@@ -46,6 +47,10 @@ router.get('/', async (req, res) => {
 // 3. UPDATE (PUT /api/productos/:id) - Actualizar un producto por ID
 router.put('/:id', async (req, res) => {
   try {
+    // Validar ObjectId
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'ID inválido' });
+    }
     // Compatibilidad: mapear campo antiguo si se envía
     if (req.body.disponibilidad !== undefined) {
       req.body.disponible = req.body.disponibilidad;
@@ -72,6 +77,10 @@ router.put('/:id', async (req, res) => {
 // 4. DELETE (DELETE /api/productos/:id) - Borrar un producto por ID
 router.delete('/:id', async (req, res) => {
   try {
+    // Validar ObjectId
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'ID inválido' });
+    }
     const productoEliminado = await Producto.findByIdAndDelete(req.params.id);
     if (!productoEliminado) {
       return res.status(404).json({ error: 'Producto no encontrado' });
