@@ -118,8 +118,9 @@ async function changeStatus(orderId, newStatus) {
 }
 
 function updateStats() {
-    const totalOrders = orders.length;
-    document.getElementById('order-count').textContent = totalOrders;
+    // Contar solo pedidos activos (no servidos)
+    const activeOrders = orders.filter(o => o.estado !== 'servido').length;
+    document.getElementById('order-count').textContent = activeOrders;
 }
 
 function showToast(msg, isError = false) {

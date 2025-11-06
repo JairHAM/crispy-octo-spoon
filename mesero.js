@@ -107,16 +107,17 @@ function renderProducts() {
         div.setAttribute('data-product-id', p._id);
         const cartItem = cart.find(c => c._id === p._id);
         const qty = cartItem ? cartItem.cantidad : 0;
+        const precio = parseFloat(p.precio) || 0;
         
         div.innerHTML = `
             <div class="producto-item">
                 <div class="producto-nombre">${p.nombre}</div>
                 <div class="producto-categoria">${p.categoria}</div>
-                <div class="producto-precio">S/. ${p.precio.toFixed(2)}</div>
+                <div class="producto-precio">S/. ${precio.toFixed(2)}</div>
                 <div class="qty-control">
                     <button onclick="decreaseQty('${p._id}')">−</button>
                     <div class="qty-display">${qty}</div>
-                    <button onclick="increaseQty('${p._id}', '${p.nombre}', ${p.precio})">+</button>
+                    <button onclick="increaseQty('${p._id}', '${p.nombre}', ${precio})">+</button>
                 </div>
             </div>
         `;
@@ -173,16 +174,17 @@ function filterProducts(category) {
         div.setAttribute('data-product-id', p._id);
         const cartItem = cart.find(c => c._id === p._id);
         const qty = cartItem ? cartItem.cantidad : 0;
+        const precio = parseFloat(p.precio) || 0;
         
         div.innerHTML = `
             <div class="producto-item">
                 <div class="producto-nombre">${p.nombre}</div>
                 <div class="producto-categoria">${p.categoria}</div>
-                <div class="producto-precio">S/. ${p.precio.toFixed(2)}</div>
+                <div class="producto-precio">S/. ${precio.toFixed(2)}</div>
                 <div class="qty-control">
                     <button onclick="decreaseQty('${p._id}')">−</button>
                     <div class="qty-display">${qty}</div>
-                    <button onclick="increaseQty('${p._id}', '${p.nombre}', ${p.precio})">+</button>
+                    <button onclick="increaseQty('${p._id}', '${p.nombre}', ${precio})">+</button>
                 </div>
             </div>
         `;

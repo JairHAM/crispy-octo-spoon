@@ -54,13 +54,14 @@ function createCard(p) {
     const div = document.createElement('div');
     const available = p.disponible ?? p.disponibilidad ?? true;
     const emojis = { 'Entrada': '🥗', 'Plato Principal': '🍽️', 'Bebida': '🥤', 'Postre': '🍰', 'Otro': '📦' };
+    const precio = parseFloat(p.precio) || 0;
     
     div.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
     div.innerHTML = `
         <div class="product-card">
             <div class="product-name">${escape(p.nombre)}</div>
             <div class="product-category">${emojis[p.categoria] || '📦'} ${p.categoria}</div>
-            <div class="product-price">S/. ${p.precio.toFixed(2)}</div>
+            <div class="product-price">S/. ${precio.toFixed(2)}</div>
             <div class="mb-2">
                 <span class="badge ${available ? 'bg-success' : 'bg-danger'}">
                     <i class="${available ? 'ri-check-circle-line' : 'ri-close-circle-line'}"></i>
