@@ -52,6 +52,41 @@
     </header>
 
     <main class="container">
+        <section class="all-orders-panel">
+            <h3><i class="ri-receipt-list-line"></i> Estado de Todos los Pedidos</h3>
+            <div class="all-orders-container">
+                <div class="orders-column all-pending">
+                    <div class="orders-header-small">
+                        <span><i class="ri-time-line"></i> Pendiente</span>
+                        <span class="count-badge" id="count-all-pending">0</span>
+                    </div>
+                    <div class="orders-list-small" id="orders-all-pending">
+                        <div class="empty-small">—</div>
+                    </div>
+                </div>
+
+                <div class="orders-column all-preparing">
+                    <div class="orders-header-small">
+                        <span><i class="ri-flashlight-line"></i> Preparando</span>
+                        <span class="count-badge" id="count-all-preparing">0</span>
+                    </div>
+                    <div class="orders-list-small" id="orders-all-preparing">
+                        <div class="empty-small">—</div>
+                    </div>
+                </div>
+
+                <div class="orders-column all-ready">
+                    <div class="orders-header-small">
+                        <span><i class="ri-check-double-line"></i> Listo</span>
+                        <span class="count-badge" id="count-all-ready">0</span>
+                    </div>
+                    <div class="orders-list-small" id="orders-all-ready">
+                        <div class="empty-small">—</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="step-section" id="step-mesa">
             <div class="section-header">
                 <h2><i class="ri-door-line"></i> Selecciona la Mesa</h2>
@@ -65,40 +100,7 @@
             <button class="btn btn-secondary" onclick="resetSelection()">
                 <i class="ri-refresh-line"></i> Cambiar Mesa
             </button>
-
-            <div class="all-orders-section">
-                <h3><i class="ri-receipt-list-line"></i> Estado de Todos los Pedidos</h3>
-                <div class="all-orders-container">
-                    <div class="orders-column all-pending">
-                        <div class="orders-header-small">
-                            <span><i class="ri-time-line"></i> Pendiente</span>
-                            <span class="count-badge" id="count-all-pending">0</span>
-                        </div>
-                        <div class="orders-list-small" id="orders-all-pending">
-                            <div class="empty-small">—</div>
-                        </div>
-                    </div>
-
-                    <div class="orders-column all-preparing">
-                        <div class="orders-header-small">
-                            <span><i class="ri-flashlight-line"></i> Preparando</span>
-                            <span class="count-badge" id="count-all-preparing">0</span>
-                        </div>
-                        <div class="orders-list-small" id="orders-all-preparing">
-                            <div class="empty-small">—</div>
-                        </div>
-                    </div>
-
-                    <div class="orders-column all-ready">
-                        <div class="orders-header-small">
-                            <span><i class="ri-check-double-line"></i> Listo</span>
-                            <span class="count-badge" id="count-all-ready">0</span>
-                        </div>
-                        <div class="orders-list-small" id="orders-all-ready">
-                            <div class="empty-small">—</div>
-                        </div>
-                    </div>
-                </div>
+        </section>
             </div>
         </section>
 

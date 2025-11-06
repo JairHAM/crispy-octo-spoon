@@ -466,10 +466,17 @@ function createAllOrderCard(order) {
     
     const elapsedTime = getElapsedTime(order.fechaCreacion);
     const itemCount = order.items.reduce((sum, item) => sum + item.cantidad, 0);
+    const itemNames = order.items.map(item => `${item.nombre} x${item.cantidad}`).join(', ');
     
     card.innerHTML = `
-        <span>Mesa ${order.mesa} • ${itemCount} platos</span>
-        <span>${elapsedTime}</span>
+        <div class="order-mesa-badge">Mesa ${order.mesa}</div>
+        <div class="order-details">
+            <div class="order-items-list">${itemNames}</div>
+            <div class="order-meta">
+                <span class="order-count">${itemCount} platos</span>
+                <span class="order-time">${elapsedTime}</span>
+            </div>
+        </div>
     `;
     
     return card;
