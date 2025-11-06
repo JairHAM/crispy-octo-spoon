@@ -2,6 +2,7 @@ const API = 'https://crispy-octo-spoon.onrender.com/api';
 let selectedMesa = null;
 let cart = [];
 let products = [];
+let previousOrderStates = {}; // Guardar estados anteriores para detectar cambios
 
 async function init() {
     await loadProducts();
@@ -38,13 +39,30 @@ function displayOrdersByStatus(orders) {
         if (order.estado === 'pendiente') pending.push(item);
         else if (order.estado === 'preparando') preparing.push(item);
         else if (order.estado === 'listo') ready.push(item);
+        
+        // 🔊 Detectar cambios de estado y reproducir sonidos
+        if (typeof soundManager !== 'undefined') {
+            const orderId = order._id;
+            const oldState = previousOrderStates[orderId];
+            const newState = order.estado;
+            
+            // Si el estado cambió
+            if (oldState && oldState !== newState) {
+                console.log(`Pedido ${orderId}: ${oldState} → ${newState}`);
+                
+                if (newState === 'preparando' && oldState === 'pendiente') {
+                    // Pedido comenzó a prepararse
+                    soundManager.playSuccess();
+                } else if (newState === 'listo') {
+                    // Pedido está LISTO
+                    soundManager.playOrderReady();
+                }
+            }
+            
+            // Guardar el estado actual para la próxima comparación
+            previousOrderStates[orderId] = newState;
+        }
     });
-
-    // 🔊 Reproducir sonido si hay nuevos pedidos LISTOS
-    const oldReady = document.getElementById('count-ready')?.textContent || '0';
-    if (ready.length > parseInt(oldReady) && typeof soundManager !== 'undefined') {
-        soundManager.playOrderReady();
-    }
 
     updateOrderColumn('pending', pending);
     updateOrderColumn('preparing', preparing);

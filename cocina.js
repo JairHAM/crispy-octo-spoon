@@ -125,9 +125,18 @@ async function changeStatus(orderId, newStatus) {
             await loadOrders();
             showToast('Pedido actualizado ✓', false);
             
-            // 🔊 Reproducir sonido si el estado es "listo"
-            if (newStatus === 'listo' && typeof soundManager !== 'undefined') {
-                soundManager.playOrderReady();
+            // 🔊 Reproducir sonido según el estado nuevo
+            if (typeof soundManager !== 'undefined') {
+                if (newStatus === 'preparando') {
+                    // Sonido cuando se comienza a preparar
+                    soundManager.playSuccess();
+                } else if (newStatus === 'listo') {
+                    // Sonido cuando está listo
+                    soundManager.playOrderReady();
+                } else if (newStatus === 'servido') {
+                    // Sonido cuando se entrega
+                    soundManager.playSuccess();
+                }
             }
         }
     } catch (e) {
