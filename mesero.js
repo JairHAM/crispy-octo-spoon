@@ -5,10 +5,13 @@ let cart = [];
 let allProducts = [];
 let filteredProducts = [];
 let refreshInterval = null;
+let allOrdersRefreshInterval = null;
 
 async function init() {
     await loadProducts();
     renderMesas();
+    loadAllOrders();
+    startAllOrdersRefresh();
 }
 
 async function loadProducts() {
@@ -410,6 +413,77 @@ function setLoading(on) {
     } else {
         overlay.classList.remove('show');
         setTimeout(() => overlay.style.display = 'none', 300);
+    }
+}
+
+async function loadAllOrders() {
+    try {
+        const res = await fetch(`${API}/pedidos`);
+        const allOrders = await res.json();
+        
+        document.getElementById('orders-all-pending').innerHTML = '';
+        document.getElementById('orders-all-preparing').innerHTML = '';
+        document.getElementById('orders-all-ready').innerHTML = '';
+        
+        let countPending = 0, countPreparing = 0, countReady = 0;
+        
+        allOrders.forEach(order => {
+            const card = createAllOrderCard(order);
+            
+            if (order.estado === 'pendiente') {
+                document.getElementById('orders-all-pending').appendChild(card);
+                countPending++;
+            } else if (order.estado === 'preparando') {
+                document.getElementById('orders-all-preparing').appendChild(card);
+                countPreparing++;
+            } else if (order.estado === 'listo') {
+                document.getElementById('orders-all-ready').appendChild(card);
+                countReady++;
+            }
+        });
+        
+        document.getElementById('count-all-pending').textContent = countPending;
+        document.getElementById('count-all-preparing').textContent = countPreparing;
+        document.getElementById('count-all-ready').textContent = countReady;
+        
+        if (countPending === 0) {
+            document.getElementById('orders-all-pending').innerHTML = '<div class="empty-small">—</div>';
+        }
+        if (countPreparing === 0) {
+            document.getElementById('orders-all-preparing').innerHTML = '<div class="empty-small">—</div>';
+        }
+        if (countReady === 0) {
+            document.getElementById('orders-all-ready').innerHTML = '<div class="empty-small">—</div>';
+        }
+    } catch (e) {
+        console.error('Error cargando todos los pedidos:', e);
+    }
+}
+
+function createAllOrderCard(order) {
+    const card = document.createElement('div');
+    card.className = 'order-item-small';
+    
+    const elapsedTime = getElapsedTime(order.fechaCreacion);
+    const itemCount = order.items.reduce((sum, item) => sum + item.cantidad, 0);
+    
+    card.innerHTML = `
+        <span>Mesa ${order.mesa} • ${itemCount} platos</span>
+        <span>${elapsedTime}</span>
+    `;
+    
+    return card;
+}
+
+function startAllOrdersRefresh() {
+    if (allOrdersRefreshInterval) clearInterval(allOrdersRefreshInterval);
+    allOrdersRefreshInterval = setInterval(() => loadAllOrders(), 3000);
+}
+
+function stopAllOrdersRefresh() {
+    if (allOrdersRefreshInterval) {
+        clearInterval(allOrdersRefreshInterval);
+        allOrdersRefreshInterval = null;
     }
 }
 
