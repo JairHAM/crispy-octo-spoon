@@ -3,79 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administración de Productos - CRUD</title>
+    <title>Panel Administrativo - Restaurante</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css">
     <link rel="stylesheet" href="admin.css">
-    <!-- Inline SVG favicon to avoid 404 on /favicon.ico -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%2334495e' width='100' height='100'/%3E%3Ctext x='50' y='65' font-size='60' text-anchor='middle' fill='white'%3E%F0%9F%8D%BD%3C/text%3E%3C/svg%3E">
-    <!-- Static PNG favicon (generated) for compatibility -->
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <meta name="theme-color" content="#34495e">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%236366f1' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='65' font-size='60' text-anchor='middle' fill='white'%3E%F0%9F%8D%BD%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#0f172a">
 </head>
 <body>
-
-    <header>
-        <h1>Panel de Administración del Restaurante 🍽️</h1>
-        <p>Gestión de Productos (Menú)</p>
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <i class="ri-restaurant-2-line"></i>
+                <span>RestaurantPro</span>
+            </div>
+            <div class="navbar-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Productos</span>
+                    <span class="stat-value" id="product-count">0</span>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <main>
-        
-        <section id="form-section">
-            <h2>Crear / Editar Producto</h2>
-            <form id="product-form">
-                <input type="hidden" id="product-id"> <label for="nombre">Nombre:</label>
-                <input type="text" id="nombre" required>
-
-                <label for="precio">Precio (S/.):</label>
-                <input type="number" id="precio" step="0.01" required>
-
-                <label for="categoria">Categoría:</label>
-                <select id="categoria" required>
-                    <option value="" disabled selected>Selecciona una categoría</option>
-                    <option value="Entrada">Entrada</option>
-                    <option value="Plato Principal">Plato Principal</option>
-                    <option value="Postre">Postre</option>
-                    <option value="Bebida">Bebida</option>
-                    <option value="Otro">Otro</option>
-                </select>
-
-                <label for="disponible">Disponible:</label>
-                <input type="checkbox" id="disponible" checked>
-
-                <button type="submit" id="submit-button">Crear Producto</button>
-                <button type="button" id="cancel-button" style="display: none;">Cancelar Edición</button>
-            </form>
-            <!-- Notificaciones y spinner -->
-            <div id="notification" aria-live="polite" style="display:none"></div>
-            <div id="loading-overlay" style="display:none">
-                <div class="spinner" role="status" aria-label="Cargando"></div>
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Form Section -->
+        <section class="form-section card">
+            <div class="section-header">
+                <div>
+                    <h2>
+                        <i class="ri-add-circle-line"></i>
+                        Nuevo Producto
+                    </h2>
+                    <p class="section-subtitle">Crea o edita productos del menú</p>
+                </div>
+                <div id="edit-mode-badge" class="badge-edit" style="display: none;">
+                    <i class="ri-edit-line"></i> Modo Edición
+                </div>
             </div>
+
+            <form id="product-form" class="form-grid">
+                <input type="hidden" id="product-id">
+
+                <div class="form-group">
+                    <label for="nombre">
+                        <i class="ri-file-text-line"></i> Nombre del Producto
+                    </label>
+                    <input 
+                        type="text" 
+                        id="nombre" 
+                        placeholder="Ej: Ceviche Mixto"
+                        required
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="precio">
+                        <i class="ri-money-dollar-circle-line"></i> Precio (S/.)
+                    </label>
+                    <input 
+                        type="number" 
+                        id="precio" 
+                        step="0.01" 
+                        min="0"
+                        placeholder="0.00"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">
+                        <i class="ri-folder-3-line"></i> Categoría
+                    </label>
+                    <select id="categoria" required>
+                        <option value="" disabled selected>Selecciona una categoría</option>
+                        <option value="Entrada">🥗 Entrada</option>
+                        <option value="Plato Principal">🍽️ Plato Principal</option>
+                        <option value="Bebida">🥤 Bebida</option>
+                        <option value="Postre">🍰 Postre</option>
+                        <option value="Otro">📦 Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label for="disponible" class="checkbox-label">
+                        <input type="checkbox" id="disponible" checked>
+                        <span class="checkbox-custom"></span>
+                        <span>Producto Disponible</span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submit-button" class="btn btn-primary">
+                        <i class="ri-check-line"></i> Crear Producto
+                    </button>
+                    <button type="button" id="cancel-button" class="btn btn-secondary" style="display: none;">
+                        <i class="ri-close-line"></i> Cancelar
+                    </button>
+                </div>
+            </form>
         </section>
 
-        <hr>
+        <!-- Products List Section -->
+        <section class="list-section card">
+            <div class="section-header">
+                <div>
+                    <h2>
+                        <i class="ri-list-check-line"></i>
+                        Inventario
+                    </h2>
+                    <p class="section-subtitle">Gestiona todos los productos</p>
+                </div>
+            </div>
 
-        <section id="list-section">
-            <h2>Inventario Actual</h2>
-            <table id="products-table">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Precio</th>
-                        <th>Categoría</th>
-                        <th>Disponible</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+            <div id="products-container" class="products-grid">
+                <div class="empty-state">
+                    <i class="ri-inbox-line"></i>
+                    <p>No hay productos aún</p>
+                    <small>Crea tu primer producto usando el formulario superior</small>
+                </div>
+            </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2025 Sistema de Gestión de Restaurante</p>
-    </footer>
+    <!-- Notification Toast -->
+    <div id="notification" class="toast" role="alert" aria-live="polite">
+        <div class="toast-content">
+            <i class="ri-check-line"></i>
+            <span id="toast-message">Mensaje</span>
+        </div>
+    </div>
 
-    <script src="admin.js"></script> 
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <p>Procesando...</p>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
 </body>
 </html>
