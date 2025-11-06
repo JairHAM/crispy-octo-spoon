@@ -73,8 +73,33 @@
     </div>
 
     <script>
+        let audioContext = null;
+
+        function initAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.error('Error creando AudioContext:', e);
+                    return false;
+                }
+            }
+            
+            // Resume si está suspended
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().catch(e => console.error('Error:', e));
+            }
+            
+            return true;
+        }
+        
         function playBeep() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (!initAudioContext()) {
+                alert('Audio no disponible en tu navegador');
+                return;
+            }
+            
+            const now = audioContext.currentTime;
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             
@@ -84,17 +109,23 @@
             oscillator.frequency.value = 800;
             oscillator.type = 'sine';
             
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            gainNode.gain.setValueAtTime(0.3, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
             
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.2);
+            oscillator.start(now);
+            oscillator.stop(now + 0.2);
             
             document.getElementById('status').textContent = '✅ Sonido 1 reproducido (800Hz)';
+            console.log('Beep 1 reproducido');
         }
         
         function playBeep2() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (!initAudioContext()) {
+                alert('Audio no disponible en tu navegador');
+                return;
+            }
+            
+            const now = audioContext.currentTime;
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             
@@ -104,24 +135,28 @@
             oscillator.frequency.value = 1200;
             oscillator.type = 'sine';
             
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            gainNode.gain.setValueAtTime(0.3, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
             
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.2);
+            oscillator.start(now);
+            oscillator.stop(now + 0.2);
             
             document.getElementById('status').textContent = '✅ Sonido 2 reproducido (1200Hz)';
+            console.log('Beep 2 reproducido');
         }
         
         function playBeep3() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (!initAudioContext()) {
+                alert('Audio no disponible en tu navegador');
+                return;
+            }
             
-            // Sequence de 3 beeps
             const frequencies = [400, 600, 800];
             let delay = 0;
             
             frequencies.forEach(freq => {
                 setTimeout(() => {
+                    const now = audioContext.currentTime;
                     const osc = audioContext.createOscillator();
                     const gain = audioContext.createGain();
                     
@@ -131,17 +166,18 @@
                     osc.frequency.value = freq;
                     osc.type = 'sine';
                     
-                    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
                     
-                    osc.start(audioContext.currentTime);
-                    osc.stop(audioContext.currentTime + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
                 }, delay);
                 
                 delay += 200;
             });
             
             document.getElementById('status').textContent = '✅ Secuencia de 3 beeps reproducida';
+            console.log('Secuencia de 3 beeps iniciada');
         }
     </script>
 </body>

@@ -5,25 +5,54 @@ class SoundManager {
         this.sounds = {};
         this.enabled = true;
         this.volume = 0.7;
+        this.audioContext = null;
+        this.initAudioContext();
+    }
+
+    // Inicializar AudioContext
+    initAudioContext() {
+        try {
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // Resume el contexto de audio si está suspended
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume().catch(e => console.error('Error resumiendo audio:', e));
+            }
+        } catch (e) {
+            console.error('Error inicializando AudioContext:', e);
+        }
     }
 
     // Crear sonidos simples usando Web Audio API (sin archivos externos)
     createBeep(frequency = 800, duration = 200, type = 'sine') {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = frequency;
-        oscillator.type = type;
-        
-        gainNode.gain.setValueAtTime(this.volume, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + duration / 1000);
+        try {
+            // Asegurar que el contexto está inicializado
+            this.initAudioContext();
+            
+            if (!this.audioContext) {
+                console.error('AudioContext no disponible');
+                return;
+            }
+
+            const now = this.audioContext.currentTime;
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(this.volume, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration / 1000);
+            
+            oscillator.start(now);
+            oscillator.stop(now + duration / 1000);
+        } catch (e) {
+            console.error('Error reproduciendo sonido:', e);
+        }
     }
 
     // Sonido para pedido LISTO (tono agudo y alegre - 3 beeps)
