@@ -11,9 +11,21 @@ async function init() {
 async function loadOrders() {
     try {
         const res = await fetch(`${API}/pedidos`);
-        orders = await res.json();
-        console.log('Total pedidos en BD:', orders.length);
-        console.log('Estados:', orders.map(o => o.estado));
+        const newOrders = await res.json();
+        
+        // Detectar si hay nuevos pedidos en estado "pendiente"
+        const newPendingOrders = newOrders.filter(o => o.estado === 'pendiente');
+        const oldPendingCount = orders.filter(o => o.estado === 'pendiente').length;
+        
+        console.log('Total pedidos en BD:', newOrders.length);
+        console.log('Estados:', newOrders.map(o => o.estado));
+        
+        // Si hay más pedidos pendientes que antes, reproducir sonido de nuevo pedido
+        if (newPendingOrders.length > oldPendingCount && typeof soundManager !== 'undefined') {
+            soundManager.playNewOrder();
+        }
+        
+        orders = newOrders;
         renderOrders();
         updateStats();
     } catch (e) {
@@ -112,6 +124,11 @@ async function changeStatus(orderId, newStatus) {
         if (res.ok) {
             await loadOrders();
             showToast('Pedido actualizado ✓', false);
+            
+            // 🔊 Reproducir sonido si el estado es "listo"
+            if (newStatus === 'listo' && typeof soundManager !== 'undefined') {
+                soundManager.playOrderReady();
+            }
         }
     } catch (e) {
         console.error('Error actualizando pedido:', e);

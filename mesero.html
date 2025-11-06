@@ -427,6 +427,39 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Control de sonidos */
+        .sound-control {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            z-index: 1000;
+        }
+
+        #sound-toggle-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: var(--primary) !important;
+            color: white !important;
+            border: none;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        #sound-toggle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        #sound-toggle-btn:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -586,7 +619,27 @@
         <span id="toast-message">Mensaje</span>
     </div>
 
+    <!-- Control de sonidos (flotante) -->
+    <div class="sound-control">
+        <button id="sound-toggle-btn" class="btn btn-sm btn-light" onclick="toggleSound()" title="Toggle sonidos">
+            <i class="ri-volume-2-line"></i>
+        </button>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sonidos.js"></script>
     <script src="mesero.js"></script>
+
+    <script>
+        // Toggle de sonidos
+        function toggleSound() {
+            const enabled = soundManager.toggle();
+            const btn = document.getElementById('sound-toggle-btn');
+            btn.innerHTML = enabled ? 
+                '<i class="ri-volume-2-line"></i>' : 
+                '<i class="ri-volume-mute-2-line"></i>';
+            btn.style.opacity = enabled ? '1' : '0.5';
+        }
+    </script>
 </body>
 </html>

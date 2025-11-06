@@ -40,6 +40,12 @@ function displayOrdersByStatus(orders) {
         else if (order.estado === 'listo') ready.push(item);
     });
 
+    // 🔊 Reproducir sonido si hay nuevos pedidos LISTOS
+    const oldReady = document.getElementById('count-ready')?.textContent || '0';
+    if (ready.length > parseInt(oldReady) && typeof soundManager !== 'undefined') {
+        soundManager.playOrderReady();
+    }
+
     updateOrderColumn('pending', pending);
     updateOrderColumn('preparing', preparing);
     updateOrderColumn('ready', ready);
