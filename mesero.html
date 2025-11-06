@@ -109,6 +109,54 @@
                 </button>
             </div>
         </section>
+
+        <section class="step-section hidden" id="step-ordenes">
+            <div class="section-header">
+                <h2><i class="ri-receipt-2-line"></i> Mis Pedidos - Mesa <span id="mesa-ordenes">0</span></h2>
+                <p class="section-subtitle">Estado de tus órdenes en cocina</p>
+            </div>
+
+            <div class="ordenes-container">
+                <div class="ordenes-column ordenes-pending">
+                    <div class="ordenes-header">
+                        <h3><i class="ri-time-line"></i> Pendiente</h3>
+                        <span class="ordenes-count" id="count-mesa-pending">0</span>
+                    </div>
+                    <div class="ordenes-list" id="ordenes-pending">
+                        <div class="empty-state-small">Sin pedidos</div>
+                    </div>
+                </div>
+
+                <div class="ordenes-column ordenes-preparing">
+                    <div class="ordenes-header">
+                        <h3><i class="ri-flashlight-line"></i> Preparando</h3>
+                        <span class="ordenes-count" id="count-mesa-preparing">0</span>
+                    </div>
+                    <div class="ordenes-list" id="ordenes-preparing">
+                        <div class="empty-state-small">Sin pedidos</div>
+                    </div>
+                </div>
+
+                <div class="ordenes-column ordenes-ready">
+                    <div class="ordenes-header">
+                        <h3><i class="ri-check-double-line"></i> Listo</h3>
+                        <span class="ordenes-count" id="count-mesa-ready">0</span>
+                    </div>
+                    <div class="ordenes-list" id="ordenes-ready">
+                        <div class="empty-state-small">Sin pedidos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carrito-actions">
+                <button class="btn btn-secondary" onclick="goBackToMesa()">
+                    <i class="ri-arrow-left-line"></i> Volver a Seleccionar Mesa
+                </button>
+                <button class="btn btn-primary" onclick="newOrder()">
+                    <i class="ri-shopping-cart-line"></i> Nuevo Pedido
+                </button>
+            </div>
+        </section>
     </main>
 
     <div id="notification" class="toast" role="alert" aria-live="polite">

@@ -4,6 +4,7 @@ let selectedMesa = null;
 let cart = [];
 let allProducts = [];
 let filteredProducts = [];
+let refreshInterval = null;
 
 async function init() {
     await loadProducts();
@@ -41,6 +42,7 @@ function selectMesa(mesa) {
     document.getElementById('current-mesa').textContent = mesa;
     document.getElementById('mesa-title').textContent = mesa;
     document.getElementById('mesa-carrito').textContent = mesa;
+    document.getElementById('mesa-ordenes').textContent = mesa;
     
     showStep('menu');
     renderProducts(allProducts);
@@ -49,6 +51,14 @@ function selectMesa(mesa) {
 function showStep(step) {
     document.querySelectorAll('.step-section').forEach(s => s.classList.add('hidden'));
     document.getElementById(`step-${step}`).classList.remove('hidden');
+    
+    if (step === 'ordenes') {
+        loadMesaOrders();
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(() => loadMesaOrders(), 2000);
+    } else {
+        clearRefreshInterval();
+    }
 }
 
 function renderProducts(products) {
@@ -231,10 +241,8 @@ async function sendOrder() {
         updateCart();
         
         setTimeout(() => {
-            selectedMesa = null;
-            showStep('mesa');
-            document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('current-mesa').textContent = '-';
+            loadMesaOrders();
+            showStep('ordenes');
         }, 1500);
         
     } catch (e) {
@@ -251,6 +259,105 @@ function resetSelection() {
     showStep('mesa');
     document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('current-mesa').textContent = '-';
+    clearRefreshInterval();
+}
+
+async function loadMesaOrders() {
+    try {
+        const res = await fetch(`${API}/pedidos`);
+        const allOrders = await res.json();
+        
+        const mesaOrders = allOrders.filter(o => o.mesa === selectedMesa);
+        
+        document.getElementById('ordenes-pending').innerHTML = '';
+        document.getElementById('ordenes-preparing').innerHTML = '';
+        document.getElementById('ordenes-ready').innerHTML = '';
+        
+        let countPending = 0, countPreparing = 0, countReady = 0;
+        
+        mesaOrders.forEach(order => {
+            const card = createMesaOrderCard(order);
+            
+            if (order.estado === 'pendiente') {
+                document.getElementById('ordenes-pending').appendChild(card);
+                countPending++;
+            } else if (order.estado === 'preparando') {
+                document.getElementById('ordenes-preparing').appendChild(card);
+                countPreparing++;
+            } else if (order.estado === 'listo') {
+                document.getElementById('ordenes-ready').appendChild(card);
+                countReady++;
+            }
+        });
+        
+        document.getElementById('count-mesa-pending').textContent = countPending;
+        document.getElementById('count-mesa-preparing').textContent = countPreparing;
+        document.getElementById('count-mesa-ready').textContent = countReady;
+        
+        if (countPending === 0 && document.getElementById('ordenes-pending').children.length === 0) {
+            document.getElementById('ordenes-pending').innerHTML = '<div class="empty-state-small">Sin pedidos</div>';
+        }
+        if (countPreparing === 0 && document.getElementById('ordenes-preparing').children.length === 0) {
+            document.getElementById('ordenes-preparing').innerHTML = '<div class="empty-state-small">Sin pedidos</div>';
+        }
+        if (countReady === 0 && document.getElementById('ordenes-ready').children.length === 0) {
+            document.getElementById('ordenes-ready').innerHTML = '<div class="empty-state-small">Sin pedidos</div>';
+        }
+    } catch (e) {
+        console.error('Error cargando pedidos:', e);
+    }
+}
+
+function createMesaOrderCard(order) {
+    const card = document.createElement('div');
+    card.className = 'mesa-order-card';
+    
+    const elapsedTime = getElapsedTime(order.fechaCreacion);
+    const itemsHTML = order.items.map(item => 
+        `<div class="order-item"><span>${item.nombre}</span> <span>x${item.cantidad}</span></div>`
+    ).join('');
+    
+    card.innerHTML = `
+        <div class="order-time">${elapsedTime}</div>
+        <div class="order-items">
+            ${itemsHTML}
+        </div>
+    `;
+    
+    return card;
+}
+
+function getElapsedTime(createdAt) {
+    const now = new Date();
+    const created = new Date(createdAt);
+    const diff = Math.floor((now - created) / 1000);
+    
+    if (diff < 60) return `${diff}s`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    return `${Math.floor(diff / 3600)}h`;
+}
+
+function goBackToMesa() {
+    selectedMesa = null;
+    cart = [];
+    updateCart();
+    showStep('mesa');
+    document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('current-mesa').textContent = '-';
+    clearRefreshInterval();
+}
+
+function newOrder() {
+    cart = [];
+    updateCart();
+    showStep('menu');
+}
+
+function clearRefreshInterval() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
 }
 
 function notify(msg, isError = false) {

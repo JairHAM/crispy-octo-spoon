@@ -543,6 +543,142 @@ body {
     font-size: 1.1rem;
 }
 
+.ordenes-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.ordenes-column {
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+}
+
+.ordenes-pending {
+    border-left: 4px solid var(--warning);
+}
+
+.ordenes-preparing {
+    border-left: 4px solid var(--primary);
+}
+
+.ordenes-ready {
+    border-left: 4px solid var(--success);
+}
+
+.ordenes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.ordenes-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.ordenes-header i {
+    font-size: 1.3rem;
+}
+
+.ordenes-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(99, 102, 241, 0.2);
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.ordenes-pending .ordenes-count {
+    background: rgba(245, 158, 11, 0.2);
+}
+
+.ordenes-preparing .ordenes-count {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.ordenes-ready .ordenes-count {
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.ordenes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mesa-order-card {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    animation: slideIn 0.3s ease-in;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.order-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.order-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.order-item span:first-child {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.order-item span:last-child {
+    color: var(--secondary);
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.empty-state-small {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 1rem 0;
+    font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
     .navbar-brand span { display: none; }
     
