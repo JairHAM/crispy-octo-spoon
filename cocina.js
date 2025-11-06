@@ -6,7 +6,6 @@ let refreshInterval = null;
 async function init() {
     await loadOrders();
     startAutoRefresh();
-    setupWebSocket();
 }
 
 async function loadOrders() {
@@ -25,22 +24,6 @@ function startAutoRefresh() {
     refreshInterval = setInterval(loadOrders, 3000);
 }
 
-function setupWebSocket() {
-    try {
-        const wsURL = 'wss://crispy-octo-spoon.onrender.com';
-        const ws = new WebSocket(wsURL);
-        
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'pedido-actualizado') {
-                loadOrders();
-            }
-        };
-    } catch (e) {
-        console.log('WebSocket no disponible, usando polling');
-    }
-}
-
 function renderOrders() {
     const pending = orders.filter(o => o.estado === 'pendiente');
     const preparing = orders.filter(o => o.estado === 'preparando');
@@ -53,9 +36,7 @@ function renderOrders() {
 
 function renderOrderSection(section, orderList) {
     const container = document.getElementById(`orders-${section}`);
-    const countEl = document.getElementById(`count-${section}`);
     
-    countEl.textContent = orderList.length;
     container.innerHTML = '';
     
     if (!orderList.length) {
@@ -75,60 +56,47 @@ function renderOrderSection(section, orderList) {
 }
 
 function createOrderCard(order, section) {
-    const card = document.createElement('div');
-    card.className = 'order-card';
+    const div = document.createElement('div');
+    div.className = `order-card ${section}`;
     
-    const tiempoTranscurrido = getElapsedTime(order.fechaCreacion);
-    const itemsHTML = order.items.map(item => `
-        <div class="order-item">
-            <span class="order-item-name">${item.nombre}</span>
-            <span class="order-item-qty">x${item.cantidad}</span>
-        </div>
-    `).join('');
+    const elapsed = getElapsedTime(order.createdAt);
+    const items = order.items.map(i => `${i.nombre} (${i.cantidad})`).join(', ');
     
-    card.innerHTML = `
-        <div class="order-header">
-            <div class="order-mesa">Mesa ${order.mesa}</div>
-            <div class="order-time">
-                <i class="ri-time-line"></i>
-                ${tiempoTranscurrido}
-            </div>
-        </div>
-        <div class="order-items">
-            ${itemsHTML}
-        </div>
-        <div class="order-actions">
-            ${getActionButton(order, section)}
-        </div>
+    div.innerHTML = `
+        <div class="order-mesa">Mesa ${order.mesa}</div>
+        <div class="order-items">${items}</div>
+        <div class="order-time">${elapsed}</div>
+        <button class="status-button ${getButtonClass(section)}" onclick="changeStatus('${order._id}', '${getNextStatus(section)}')">
+            <i class="ri-arrow-right-line"></i> ${getButtonText(section)}
+        </button>
     `;
     
-    return card;
+    return div;
 }
 
-function getActionButton(order, section) {
-    if (section === 'pending') {
-        return `<button class="order-btn" onclick="changeStatus('${order._id}', 'preparando')">
-                    <i class="ri-restaurant-line"></i> Preparar
-                </button>`;
-    } else if (section === 'preparing') {
-        return `<button class="order-btn" onclick="changeStatus('${order._id}', 'listo')">
-                    <i class="ri-check-double-line"></i> Listo
-                </button>`;
-    } else {
-        return `<button class="order-btn" onclick="changeStatus('${order._id}', 'servido')">
-                    <i class="ri-team-line"></i> Servido
-                </button>`;
-    }
+function getButtonClass(section) {
+    return section === 'pending' || section === 'preparing' ? 'btn-preparing' : 'btn-ready';
+}
+
+function getButtonText(section) {
+    if (section === 'pending') return 'Preparar';
+    if (section === 'preparing') return 'Listo';
+    return 'Servido';
+}
+
+function getNextStatus(section) {
+    if (section === 'pending') return 'preparando';
+    if (section === 'preparing') return 'listo';
+    return 'servido';
 }
 
 function getElapsedTime(dateString) {
-    const fecha = new Date(dateString);
-    const ahora = new Date();
-    const diff = Math.floor((ahora - fecha) / 1000);
+    const diff = Date.now() - new Date(dateString).getTime();
+    const secs = Math.floor(diff / 1000);
+    const mins = Math.floor(secs / 60);
     
-    if (diff < 60) return `${diff}s`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-    return `${Math.floor(diff / 3600)}h`;
+    if (mins > 0) return `${mins}m`;
+    return `${secs}s`;
 }
 
 async function changeStatus(orderId, newStatus) {
@@ -141,9 +109,11 @@ async function changeStatus(orderId, newStatus) {
         
         if (res.ok) {
             await loadOrders();
+            showToast('Pedido actualizado ✓', false);
         }
     } catch (e) {
         console.error('Error actualizando pedido:', e);
+        showToast('Error actualizando pedido', true);
     }
 }
 
@@ -155,6 +125,14 @@ function updateStats() {
     document.getElementById('stat-pending').textContent = pending;
     document.getElementById('stat-preparing').textContent = preparing;
     document.getElementById('stat-ready').textContent = ready;
+}
+
+function showToast(msg, isError = false) {
+    const toast = document.getElementById('notification');
+    toast.className = `toast ${isError ? 'error' : 'success'}`;
+    document.getElementById('toast-message').textContent = msg;
+    toast.style.display = 'flex';
+    setTimeout(() => toast.style.display = 'none', 3000);
 }
 
 document.addEventListener('DOMContentLoaded', init);

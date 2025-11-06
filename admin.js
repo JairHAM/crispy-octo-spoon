@@ -6,20 +6,11 @@ const DOM = {
     container: document.getElementById('products-container'),
     productId: document.getElementById('product-id'),
     count: document.getElementById('product-count'),
-    badge: document.getElementById('edit-mode-badge'),
-    loading: document.getElementById('loading-overlay'),
     toast: document.getElementById('notification'),
 };
 
 let isEdit = false;
-let isMobile = window.innerWidth <= 768;
 let pollInterval = null;
-
-window.addEventListener('resize', () => { isMobile = window.innerWidth <= 768; });
-window.addEventListener('orientationchange', () => {
-    isMobile = window.innerWidth <= 768;
-    setTimeout(() => loadProducts(), 200);
-});
 
 function startPolling() {
     if (pollInterval) return;
@@ -38,7 +29,6 @@ function stopPolling() {
 
 async function loadProducts() {
     try {
-        setLoading(true);
         const res = await fetch(API);
         if (!res.ok) throw new Error('Error al cargar');
         const products = await res.json();
@@ -46,18 +36,18 @@ async function loadProducts() {
         updateCount(products.length);
     } catch (e) {
         notify('No se pudieron cargar los productos', true);
-    } finally {
-        setLoading(false);
     }
 }
 
 function renderProducts(products) {
     DOM.container.innerHTML = '';
     if (!products?.length) {
-        DOM.container.innerHTML = `<div class="empty-state">
-            <i class="ri-inbox-line"></i>
-            <p>No hay productos</p>
-            <small>Crea tu primer producto</small>
+        DOM.container.innerHTML = `<div class="col-12">
+            <div class="empty-state">
+                <i class="ri-inbox-line"></i>
+                <p>No hay productos</p>
+                <small>Crea tu primer producto</small>
+            </div>
         </div>`;
         return;
     }
@@ -65,31 +55,33 @@ function renderProducts(products) {
 }
 
 function createCard(p) {
-    const card = document.createElement('div');
+    const div = document.createElement('div');
     const available = p.disponible ?? p.disponibilidad ?? true;
     const emojis = { 'Entrada': '🥗', 'Plato Principal': '🍽️', 'Bebida': '🥤', 'Postre': '🍰', 'Otro': '📦' };
     
-    card.className = 'product-card';
-    card.innerHTML = `
-        <div class="product-header">
-            <h3 class="product-title">${escape(p.nombre)}</h3>
+    div.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
+    div.innerHTML = `
+        <div class="product-card">
+            <div class="product-name">${escape(p.nombre)}</div>
             <div class="product-category">${emojis[p.categoria] || '📦'} ${p.categoria}</div>
-        </div>
-        <div class="product-price">S/. ${p.precio.toFixed(2)}</div>
-        <div class="product-status ${available ? '' : 'unavailable'}">
-            <i class="${available ? 'ri-check-circle-line' : 'ri-close-circle-line'}"></i>
-            ${available ? 'Disponible' : 'Agotado'}
-        </div>
-        <div class="product-actions">
-            <button class="btn btn-edit btn-sm" onclick="editProduct('${p._id}')">
-                <i class="ri-edit-line"></i> Editar
-            </button>
-            <button class="btn btn-delete btn-sm" onclick="deleteProduct('${p._id}')">
-                <i class="ri-delete-bin-line"></i> Eliminar
-            </button>
+            <div class="product-price">S/. ${p.precio.toFixed(2)}</div>
+            <div class="mb-2">
+                <span class="badge ${available ? 'bg-success' : 'bg-danger'}">
+                    <i class="${available ? 'ri-check-circle-line' : 'ri-close-circle-line'}"></i>
+                    ${available ? 'Disponible' : 'Agotado'}
+                </span>
+            </div>
+            <div class="product-actions">
+                <button class="btn btn-sm btn-outline-primary" onclick="editProduct('${p._id}')">
+                    <i class="ri-edit-line"></i> Editar
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${p._id}')">
+                    <i class="ri-delete-bin-line"></i> Eliminar
+                </button>
+            </div>
         </div>
     `;
-    return card;
+    return div;
 }
 
 function escape(text) {
@@ -113,8 +105,6 @@ DOM.form.addEventListener('submit', async (e) => {
 
     try {
         DOM.submitBtn.disabled = true;
-        setLoading(true);
-
         const id = DOM.productId.value;
         const method = id ? 'PUT' : 'POST';
         const url = id ? `${API}/${id}` : API;
@@ -131,13 +121,10 @@ DOM.form.addEventListener('submit', async (e) => {
         DOM.form.reset();
         resetForm();
         loadProducts();
-
-        if (isMobile) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
     } catch (e) {
         notify(e.message || 'Error al guardar', true);
     } finally {
         DOM.submitBtn.disabled = false;
-        setLoading(false);
     }
 });
 
@@ -156,17 +143,8 @@ async function editProduct(id) {
 
         isEdit = true;
         DOM.submitBtn.textContent = '💾 Guardar Cambios';
-        DOM.badge.style.display = 'flex';
-        DOM.cancelBtn.style.display = 'inline-flex';
-
-        if (isMobile) {
-            setTimeout(() => {
-                DOM.form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                setTimeout(() => window.scrollBy({ top: -60, behavior: 'smooth' }), 500);
-            }, 300);
-        } else {
-            DOM.form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        DOM.cancelBtn.style.display = 'inline-block';
+        DOM.form.scrollIntoView({ behavior: 'smooth' });
     } catch (e) {
         notify('No se pudo cargar el producto', true);
     }
@@ -178,16 +156,14 @@ function resetForm() {
     DOM.form.reset();
     DOM.productId.value = '';
     DOM.submitBtn.textContent = '✅ Crear Producto';
-    DOM.badge.style.display = 'none';
     DOM.cancelBtn.style.display = 'none';
     isEdit = false;
 }
 
 async function deleteProduct(id) {
-    if (!confirm('¿Eliminar este producto? No se puede deshacer.')) return;
+    if (!confirm('¿Eliminar este producto?')) return;
 
     try {
-        setLoading(true);
         const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Error al eliminar');
         
@@ -195,52 +171,26 @@ async function deleteProduct(id) {
         loadProducts();
     } catch (e) {
         notify(e.message || 'Error al eliminar', true);
-    } finally {
-        setLoading(false);
     }
 }
 
-function notify(msg, isError = false, timeout = 3000) {
+function notify(msg, isError = false) {
     const toastMsg = document.getElementById('toast-message');
     toastMsg.textContent = msg;
     
-    DOM.toast.classList.remove('error', 'success', 'show');
-    DOM.toast.classList.add('show', isError ? 'error' : 'success');
+    DOM.toast.classList.remove('error', 'success');
+    DOM.toast.classList.add(isError ? 'error' : 'success');
+    DOM.toast.style.display = 'flex';
     
-    const icon = DOM.toast.querySelector('i');
-    icon.className = isError ? 'ri-close-circle-line' : 'ri-check-circle-line';
-    
-    clearTimeout(notify._timeout);
-    notify._timeout = setTimeout(() => DOM.toast.classList.remove('show'), timeout);
-}
-
-function setLoading(on) {
-    if (on) {
-        DOM.loading.classList.add('show');
-        document.querySelectorAll('button').forEach(b => b.disabled = true);
-    } else {
-        DOM.loading.classList.remove('show');
-        document.querySelectorAll('button').forEach(b => b.disabled = false);
-    }
+    setTimeout(() => DOM.toast.style.display = 'none', 3000);
 }
 
 function updateCount(count) {
     if (DOM.count) DOM.count.textContent = count;
 }
 
-function preventIOSZoom() {
-    document.querySelectorAll('input, select, textarea').forEach(el => {
-        el.addEventListener('focus', () => {
-            setTimeout(() => { document.body.scrollTop = 0; document.documentElement.scrollTop = 0; }, 500);
-        });
-    });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
-    preventIOSZoom();
     startPolling();
-    setTimeout(() => document.getElementById('nombre').focus(), 300);
-
     window.addEventListener('beforeunload', stopPolling);
 });
