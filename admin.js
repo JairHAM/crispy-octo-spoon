@@ -14,6 +14,21 @@ const loadingOverlay = document.getElementById('loading-overlay');
 const notification = document.getElementById('notification');
 
 let isEditMode = false;
+let isMobile = window.innerWidth <= 768;
+
+// Detectar cambios de tamaño
+window.addEventListener('resize', () => {
+    isMobile = window.innerWidth <= 768;
+});
+
+// Manejar orientación en dispositivos móviles
+window.addEventListener('orientationchange', () => {
+    isMobile = window.innerWidth <= 768;
+    // Pequeño delay para que se recalcule el layout
+    setTimeout(() => {
+        loadProducts();
+    }, 200);
+});
 
 // ============================================================
 // FUNCIONES PRINCIPALES - CRUD
@@ -191,6 +206,13 @@ form.addEventListener('submit', async (e) => {
         form.reset();
         resetForm();
         loadProducts();
+        
+        // Scroll al inicio en mobile
+        if (isMobile) {
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 300);
+        }
 
     } catch (error) {
         console.error('Error al guardar:', error);
@@ -231,8 +253,18 @@ function fillFormForEdit(e, productId) {
             editModeBadge.style.display = 'flex';
             cancelButton.style.display = 'inline-flex';
             
-            // Scroll al formulario
-            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Scroll al formulario con offset para navbar en mobile
+            if (isMobile) {
+                setTimeout(() => {
+                    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Pequeño delay y scroll adicional para compensar navbar sticky
+                    setTimeout(() => {
+                        window.scrollBy({ top: -60, behavior: 'smooth' });
+                    }, 500);
+                }, 300);
+            } else {
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         })
         .catch(err => {
             console.error('Error:', err);
@@ -342,6 +374,22 @@ function updateProductCount(count) {
     }
 }
 
+/**
+ * Prevenir zoom en inputs en iOS
+ */
+function preventIOSZoom() {
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            // Prevenir zoom al enfocar input
+            setTimeout(() => {
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
+            }, 500);
+        });
+    });
+}
+
 // ============================================================
 // INICIALIZACIÓN
 // ============================================================
@@ -349,6 +397,7 @@ function updateProductCount(count) {
 // Cargar productos cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
+    preventIOSZoom();
     
     // Agregar listener para enfocar en el nombre al cargar
     setTimeout(() => {
