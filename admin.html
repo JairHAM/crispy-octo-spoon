@@ -196,17 +196,31 @@
             border-radius: 4px;
         }
 
-        .card-header {
-            background: var(--dark-surface) !important;
-            border-bottom: 1px solid var(--dark-border) !important;
-        }
-
-        .card-header h5 {
+        .form-check-label {
             color: var(--dark-text) !important;
+            font-weight: 500;
         }
 
-        .card-header small {
-            color: var(--dark-text-secondary) !important;
+        .form-check-input {
+            border-color: var(--dark-border);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .section-title {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--dark-text);
+        }
+
+        .section-title i {
+            font-size: 1.25rem;
         }
         
         @keyframes slideIn {
@@ -251,13 +265,10 @@
     <div class="container-fluid py-4">
         <!-- Formulario -->
         <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
+            <div class="card-body">
+                <h5 class="section-title mb-4">
                     <i class="ri-add-circle-line"></i> Nuevo Producto
                 </h5>
-                <small>Crea o edita productos del menú</small>
-            </div>
-            <div class="card-body">
                 <form id="product-form" class="row g-3">
                     <input type="hidden" id="product-id">
                     
@@ -312,13 +323,10 @@
 
         <!-- Listado de productos -->
         <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
+            <div class="card-body">
+                <h5 class="section-title mb-4">
                     <i class="ri-list-check-line"></i> Inventario
                 </h5>
-                <small>Gestiona todos los productos</small>
-            </div>
-            <div class="card-body">
                 <div id="products-container" class="row g-3">
                     <div class="col-12">
                         <div class="empty-state">
