@@ -1,4 +1,4 @@
-// server.js - Updated for productoId fix + static files
+// server.js - Updated for productoId fix + static files + audio debug
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
