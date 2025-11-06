@@ -87,6 +87,9 @@ mongoose.connect(process.env.MONGO_URI)
 const productosRouter = require('./routes/productos');
 app.use('/api/productos', productosRouter);
 
+const pedidosRouter = require('./routes/pedidos');
+app.use('/api/pedidos', pedidosRouter);
+
 io.on('connection', (socket) => {
   socket.on('subscribe', (data) => {
     if (data.channel === 'productos') {

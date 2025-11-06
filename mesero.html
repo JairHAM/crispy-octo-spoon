@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Mesero - El Enkanto</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css">
+    <link rel="stylesheet" href="mesero.css">
+    <style>
+        input, select, textarea { font-size: 16px !important; }
+        @supports (padding: max(0px)) {
+            body { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <i class="ri-restaurant-2-line"></i>
+                <span>El Enkanto - Mesero</span>
+            </div>
+            <div class="navbar-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Mesa</span>
+                    <span class="stat-value" id="current-mesa">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Platos</span>
+                    <span class="stat-value" id="cart-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="step-section" id="step-mesa">
+            <div class="section-header">
+                <h2><i class="ri-door-line"></i> Selecciona la Mesa</h2>
+                <p class="section-subtitle">Elige la mesa donde estás atendiendo</p>
+            </div>
+            
+            <div class="mesas-grid" id="mesas-container">
+                <!-- Mesas generadas dinámicamente -->
+            </div>
+
+            <button class="btn btn-secondary" onclick="resetSelection()">
+                <i class="ri-refresh-line"></i> Cambiar Mesa
+            </button>
+        </section>
+
+        <section class="step-section hidden" id="step-menu">
+            <div class="section-header">
+                <h2><i class="ri-book-line"></i> Menú - Mesa <span id="mesa-title">0</span></h2>
+                <p class="section-subtitle">Selecciona los platos para el cliente</p>
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" data-category="todas">Todas</button>
+                <button class="filter-btn" data-category="Entrada">🥗 Entrada</button>
+                <button class="filter-btn" data-category="Plato Principal">🍽️ Principal</button>
+                <button class="filter-btn" data-category="Bebida">🥤 Bebida</button>
+                <button class="filter-btn" data-category="Postre">🍰 Postre</button>
+                <button class="filter-btn" data-category="Otro">📦 Otro</button>
+            </div>
+
+            <div class="productos-grid" id="productos-container">
+                <!-- Productos generados dinámicamente -->
+            </div>
+        </section>
+
+        <section class="step-section hidden" id="step-carrito">
+            <div class="section-header">
+                <h2><i class="ri-shopping-cart-line"></i> Tu Pedido - Mesa <span id="mesa-carrito">0</span></h2>
+                <p class="section-subtitle">Revisa antes de enviar a cocina</p>
+            </div>
+
+            <div class="carrito-items" id="carrito-items">
+                <!-- Items del carrito generados dinámicamente -->
+            </div>
+
+            <div class="carrito-actions">
+                <button class="btn btn-secondary" onclick="backToMenu()">
+                    <i class="ri-arrow-left-line"></i> Agregar Más
+                </button>
+                <button class="btn btn-primary" onclick="sendOrder()">
+                    <i class="ri-send-plane-line"></i> Enviar a Cocina
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <div id="notification" class="toast" role="alert" aria-live="polite">
+        <div class="toast-content">
+            <i class="ri-check-line"></i>
+            <span id="toast-message">Mensaje</span>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <p>Procesando...</p>
+        </div>
+    </div>
+
+    <script src="mesero.js"></script>
+</body>
+</html>

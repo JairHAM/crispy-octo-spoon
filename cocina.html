@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Cocina - El Enkanto</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css">
+    <link rel="stylesheet" href="cocina.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <i class="ri-fire-line"></i>
+                <span>Cocina - El Enkanto</span>
+            </div>
+            <div class="navbar-stats">
+                <div class="stat-item">
+                    <span class="stat-label">En Espera</span>
+                    <span class="stat-value stat-pending" id="stat-pending">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">En Preparación</span>
+                    <span class="stat-value stat-preparing" id="stat-preparing">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Listos</span>
+                    <span class="stat-value stat-ready" id="stat-ready">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="orders-container">
+            <section class="orders-section">
+                <div class="section-header">
+                    <h2><i class="ri-time-line"></i> En Espera</h2>
+                    <span class="count" id="count-pending">0</span>
+                </div>
+                <div class="orders-grid" id="orders-pending">
+                    <div class="empty-state">
+                        <i class="ri-inbox-line"></i>
+                        <p>Sin pedidos en espera</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="orders-section">
+                <div class="section-header">
+                    <h2><i class="ri-restaurant-line"></i> En Preparación</h2>
+                    <span class="count" id="count-preparing">0</span>
+                </div>
+                <div class="orders-grid" id="orders-preparing">
+                    <div class="empty-state">
+                        <i class="ri-inbox-line"></i>
+                        <p>Sin pedidos en preparación</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="orders-section">
+                <div class="section-header">
+                    <h2><i class="ri-check-double-line"></i> Listos para Servir</h2>
+                    <span class="count" id="count-ready">0</span>
+                </div>
+                <div class="orders-grid" id="orders-ready">
+                    <div class="empty-state">
+                        <i class="ri-inbox-line"></i>
+                        <p>Sin pedidos listos</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="cocina.js"></script>
+</body>
+</html>
