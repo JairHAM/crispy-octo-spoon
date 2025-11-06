@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonido Test Ultra Simple</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #f1f5f9;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .box {
+            background: #1e293b;
+            border: 2px solid #6366f1;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 { color: #6366f1; margin-top: 0; }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover { background: #7c8ff8; }
+        button:active { transform: scale(0.95); }
+        
+        .resultado {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid #6366f1;
+            border-radius: 6px;
+            min-height: 50px;
+            display: none;
+        }
+        .resultado.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🔊 PRUEBA DE SONIDO</h1>
+        
+        <p>Haz clic en cualquier botón para escuchar un sonido</p>
+        
+        <button onclick="sonarAhora()">PRESIONA PARA SONAR</button>
+        
+        <div id="resultado" class="resultado">
+            <p id="texto">Estado...</p>
+        </div>
+    </div>
+
+    <script>
+        function sonarAhora() {
+            console.log("Botón presionado");
+            
+            const el = document.getElementById('resultado');
+            const txt = document.getElementById('texto');
+            
+            try {
+                // Crear contexto de audio
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log("AudioContext creado, estado:", audioContext.state);
+                
+                txt.innerHTML = "🔊 Reproduciendo sonido...";
+                el.classList.add('show');
+                
+                // Si está suspended, reanudar
+                if (audioContext.state === 'suspended') {
+                    console.log("AudioContext suspended, resumiendo...");
+                    audioContext.resume();
+                }
+                
+                // Crear sonido
+                const now = audioContext.currentTime;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.frequency.value = 880; // La nota A5
+                osc.type = 'sine';
+                
+                // Volumen alto
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+                
+                osc.start(now);
+                osc.stop(now + 1.0);
+                
+                console.log("Sonido iniciado");
+                txt.innerHTML = "✅ Sonido reproducido (1 segundo)<br><br>¿LO ESCUCHASTE?";
+                
+            } catch (e) {
+                console.error("ERROR:", e);
+                txt.innerHTML = "❌ ERROR: " + e.message;
+                el.classList.add('show');
+            }
+        }
+        
+        // Log inicial
+        console.log("Página cargada correctamente");
+        document.getElementById('resultado').innerHTML = "<p>✅ Página lista. Presiona el botón arriba.</p>";
+        document.getElementById('resultado').classList.add('show');
+    </script>
+</body>
+</html>
