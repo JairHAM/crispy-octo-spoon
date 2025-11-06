@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar y Reproducir Audio</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #f1f5f9;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .box {
+            background: #1e293b;
+            border: 2px solid #6366f1;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 { color: #6366f1; margin-top: 0; }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover { background: #7c8ff8; }
+        button:active { transform: scale(0.95); }
+        
+        .resultado {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid #6366f1;
+            border-radius: 6px;
+            min-height: 50px;
+        }
+        
+        .log {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 12px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🔊 GENERAR SONIDO CON WEB AUDIO API</h1>
+        
+        <p>Estos botones generan sonido en tiempo real usando Web Audio API</p>
+        
+        <button onclick="playTone()">1. SONIDO 880Hz</button>
+        <button onclick="playSequence()">2. SECUENCIA</button>
+        <button onclick="playLoud()">3. MÁS FUERTE</button>
+        
+        <div class="resultado">
+            <p id="status">Estado: Listo</p>
+        </div>
+        
+        <div class="log" id="log">
+            <div>[INFO] Página cargada</div>
+        </div>
+    </div>
+
+    <script>
+        let audioContext = null;
+        
+        function log(msg) {
+            const logEl = document.getElementById('log');
+            const line = document.createElement('div');
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(msg);
+        }
+        
+        function ensureAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    log('✅ AudioContext creado');
+                } catch (e) {
+                    log('❌ Error: ' + e.message);
+                    return false;
+                }
+            }
+            
+            if (audioContext.state === 'suspended') {
+                log('⚠️ AudioContext suspended, resumiendo...');
+                audioContext.resume().then(() => log('✅ Reanudado'));
+            }
+            
+            return true;
+        }
+        
+        function playTone() {
+            log('--- BOTÓN 1: SONIDO 880Hz ---');
+            
+            if (!ensureAudioContext()) {
+                document.getElementById('status').innerHTML = '❌ Web Audio API no disponible';
+                return;
+            }
+            
+            try {
+                const now = audioContext.currentTime;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.value = 880;
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+                
+                osc.start(now);
+                osc.stop(now + 1.0);
+                
+                log('✅ Sonido 880Hz iniciado');
+                document.getElementById('status').innerHTML = '✅ Sonido 880Hz por 1 segundo<br><strong>¿LO ESCUCHAS?</strong>';
+                
+            } catch (e) {
+                log('❌ Error: ' + e.message);
+                document.getElementById('status').innerHTML = '❌ ' + e.message;
+            }
+        }
+        
+        function playSequence() {
+            log('--- BOTÓN 2: SECUENCIA ---');
+            
+            if (!ensureAudioContext()) {
+                document.getElementById('status').innerHTML = '❌ Web Audio API no disponible';
+                return;
+            }
+            
+            const freqs = [440, 550, 660, 880];
+            let delay = 0;
+            
+            freqs.forEach((freq, i) => {
+                setTimeout(() => {
+                    try {
+                        const now = audioContext.currentTime;
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                        
+                        osc.start(now);
+                        osc.stop(now + 0.4);
+                        
+                        log(`  Beep ${i+1}: ${freq}Hz`);
+                        
+                    } catch (e) {
+                        log('❌ Error: ' + e.message);
+                    }
+                }, delay);
+                delay += 500;
+            });
+            
+            document.getElementById('status').innerHTML = '✅ 4 Beeps iniciados<br>Espera 2 segundos...';
+        }
+        
+        function playLoud() {
+            log('--- BOTÓN 3: MÁS FUERTE ---');
+            
+            if (!ensureAudioContext()) {
+                document.getElementById('status').innerHTML = '❌ Web Audio API no disponible';
+                return;
+            }
+            
+            try {
+                const now = audioContext.currentTime;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.value = 1000;
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                // MUCHO MÁS FUERTE (0.9 en lugar de 0.5)
+                gain.gain.setValueAtTime(0.9, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 2.0);
+                
+                osc.start(now);
+                osc.stop(now + 2.0);
+                
+                log('✅ Sonido 1000Hz MÁS FUERTE iniciado (2 segundos)');
+                document.getElementById('status').innerHTML = '✅ SONIDO MÁS FUERTE: 1000Hz por 2 segundos<br><strong>¿¿¿LO ESCUCHAS AHORA???</strong>';
+                
+            } catch (e) {
+                log('❌ Error: ' + e.message);
+                document.getElementById('status').innerHTML = '❌ ' + e.message;
+            }
+        }
+        
+        log('✅ Página lista - presiona los botones');
+    </script>
+</body>
+</html>
