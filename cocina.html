@@ -42,6 +42,40 @@
             margin-right: 0.5rem;
         }
         
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: #7c8ff8;
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            border: none;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #f472b6;
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .badge {
+            padding: 0.35rem 0.65rem;
+            border-radius: 4px;
+        }
+        
         .order-card {
             border: 2px solid var(--dark-border);
             border-radius: 8px;
@@ -170,6 +204,17 @@
             background: rgba(239, 68, 68, 0.1);
             border-color: var(--danger);
             color: var(--danger);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
