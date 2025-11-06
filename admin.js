@@ -14,11 +14,21 @@ const productIdInput = document.getElementById('product-id');
 // --- 1. Cargar y Mostrar Productos (READ) ---
 async function loadProducts() {
     try {
+        setLoading(true);
         const response = await fetch(API_PRODUCTOS);
+        if (!response.ok) throw new Error('Error al obtener productos');
         const products = await response.json();
-        
+
         tableBody.innerHTML = ''; // Limpiar tabla
-        
+
+        if (!products || products.length === 0) {
+            const row = tableBody.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 5;
+            cell.textContent = 'No hay productos aún.';
+            cell.style.textAlign = 'center';
+        }
+
         products.forEach(product => {
             const row = tableBody.insertRow();
             
@@ -62,7 +72,9 @@ async function loadProducts() {
 
     } catch (error) {
         console.error('Error al cargar productos:', error);
-        alert('No se pudieron cargar los productos. Verifique la conexión a la API.');
+        showNotification('No se pudieron cargar los productos.', true);
+    } finally {
+        setLoading(false);
     }
 }
 
@@ -83,10 +95,13 @@ form.addEventListener('submit', async (e) => {
         let method = 'POST';
 
         if (id) {
-            // Modo Edición (UPDATE)
             url = `${API_PRODUCTOS}/${id}`;
             method = 'PUT';
         }
+
+        // UX: deshabilitar botón y mostrar loading
+        submitButton.disabled = true;
+        setLoading(true);
 
         const response = await fetch(url, {
             method: method,
@@ -97,18 +112,22 @@ form.addEventListener('submit', async (e) => {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.mensaje || 'Error desconocido al guardar el producto.');
+            let msg = 'Error desconocido al guardar el producto.';
+            try { const error = await response.json(); msg = error.mensaje || msg; } catch(e){}
+            throw new Error(msg);
         }
 
-        alert(`Producto ${id ? 'actualizado' : 'creado'} con éxito.`);
+        const saved = await response.json().catch(()=>null);
+        showNotification(`Producto ${id ? 'actualizado' : 'creado'} con éxito.`);
         form.reset(); 
-        loadProducts(); // Recargar la lista
         resetForm(); // Volver a modo creación si estábamos editando
-
+        loadProducts(); // Recargar la lista
     } catch (error) {
         console.error('Error al guardar el producto:', error);
-        alert(error.message);
+        showNotification(error.message, true);
+    } finally {
+        submitButton.disabled = false;
+        setLoading(false);
     }
 });
 
@@ -126,6 +145,16 @@ function fillFormForEdit(product) {
 
     submitButton.textContent = 'Guardar Cambios';
     cancelButton.style.display = 'inline-block';
+
+    // Mostrar ID en formulario (usuario puede verlo si quiere)
+    let idLabel = document.getElementById('product-id-label');
+    if (!idLabel) {
+        idLabel = document.createElement('div');
+        idLabel.id = 'product-id-label';
+        idLabel.style.marginTop = '8px';
+        document.getElementById('form-section').appendChild(idLabel);
+    }
+    idLabel.textContent = `ID: ${product._id}`;
 }
 
 // --- 4. Volver a Modo Creación ---
@@ -144,22 +173,39 @@ async function deleteProduct(id) {
     }
 
     try {
-        const response = await fetch(`${API_PRODUCTOS}/${id}`, {
-            method: 'DELETE'
-        });
-
+        setLoading(true);
+        const response = await fetch(`${API_PRODUCTOS}/${id}`, { method: 'DELETE' });
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.mensaje || 'Error desconocido al eliminar el producto.');
+            let msg = 'Error desconocido al eliminar el producto.';
+            try { const error = await response.json(); msg = error.mensaje || msg; } catch(e){}
+            throw new Error(msg);
         }
 
-        alert('Producto eliminado con éxito.');
+        showNotification('Producto eliminado con éxito.');
         loadProducts(); // Recargar la lista
 
     } catch (error) {
         console.error('Error al eliminar el producto:', error);
-        alert(error.message);
+        showNotification(error.message, true);
     }
+    finally { setLoading(false); }
+}
+
+// --- Helpers: notifications & loading ---
+function showNotification(message, isError = false, timeout = 3000) {
+    const n = document.getElementById('notification');
+    n.textContent = message;
+    if (isError) n.classList.add('error'); else n.classList.remove('error');
+    n.style.display = 'block';
+    clearTimeout(showNotification._t);
+    showNotification._t = setTimeout(() => { n.style.display = 'none'; }, timeout);
+}
+
+function setLoading(on) {
+    const overlay = document.getElementById('loading-overlay');
+    overlay.style.display = on ? 'flex' : 'none';
+    // disable action buttons while loading
+    document.querySelectorAll('button').forEach(b => b.disabled = on);
 }
 
 // Inicializar la carga de productos al cargar la página
