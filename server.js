@@ -7,15 +7,32 @@ require('dotenv').config();
 const app = express();
 
 // --- CONFIGURACIÓN DE CORS (PRIMERO) ---
-// Configuración para permitir solicitudes solo desde tu dominio de GitHub Pages
-// NOTA: 'https://jairham.github.io' permite cualquier repositorio bajo ese usuario.
+// Permitir solicitudes desde GitHub Pages y desde el dominio del servidor (Render).
+// Usamos una lista blanca y manejamos preflight (OPTIONS) explícitamente.
+const allowedOrigins = [
+  'https://jairham.github.io',
+  'https://crispy-octo-spoon.onrender.com',
+  'http://localhost:3000'
+];
+
 const corsOptions = {
-    origin: 'https://jairham.github.io', 
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204
+  origin: function (origin, callback) {
+    // origin puede ser undefined en herramientas como curl o cuando se hace una petición desde el mismo servidor
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('No permitido por CORS'));
+    }
+  },
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204
 };
+
 app.use(cors(corsOptions));
+// Asegurar que las solicitudes preflight OPTIONS sean respondidas
+app.options('*', cors(corsOptions));
 
 // Middleware para parsear JSON (DEBE IR ANTES DE LAS RUTAS)
 app.use(express.json()); 
