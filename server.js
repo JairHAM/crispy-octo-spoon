@@ -36,8 +36,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-// Asegurar que las solicitudes preflight OPTIONS sean respondidas
-app.options('*', cors(corsOptions));
+// Express/cors ya manejan las solicitudes preflight cuando se usa el middleware
+// Evitamos registrar una ruta con '*' que causa errores en algunas versiones de path-to-regexp
+// (Render/Express path parser). Si es necesario, manejamos OPTIONS globalmente abajo.
 
 // SECURITY & PERFORMANCE MIDDLEWARE
 app.use(helmet());
