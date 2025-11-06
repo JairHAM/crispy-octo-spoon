@@ -14,6 +14,11 @@ require('dotenv').config();
 
 const app = express();
 
+// Si la app corre detrás de un proxy (Render, Heroku, etc.) habilitamos trust proxy
+// para que express y middleware como express-rate-limit puedan usar correctamente
+// la cabecera X-Forwarded-For y calcular la IP real del cliente.
+app.set('trust proxy', 1);
+
 // --- CONFIGURACIÓN DE CORS (PRIMERO) ---
 // Permitir solicitudes desde GitHub Pages y desde el dominio del servidor (Render).
 // Usamos una lista blanca y manejamos preflight (OPTIONS) explícitamente.
