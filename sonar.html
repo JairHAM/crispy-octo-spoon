@@ -65,24 +65,29 @@
     </div>
 
     <script>
-        function sonarAhora() {
+        let audioContext = null;
+        
+        async function sonarAhora() {
             console.log("Botón presionado");
             
             const el = document.getElementById('resultado');
             const txt = document.getElementById('texto');
             
             try {
-                // Crear contexto de audio
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                console.log("AudioContext creado, estado:", audioContext.state);
+                // Crear contexto de audio UNA SOLA VEZ
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log("AudioContext creado, estado:", audioContext.state);
+                }
                 
                 txt.innerHTML = "🔊 Reproduciendo sonido...";
                 el.classList.add('show');
                 
-                // Si está suspended, reanudar
+                // Si está suspended, ESPERAR a que se reanude
                 if (audioContext.state === 'suspended') {
                     console.log("AudioContext suspended, resumiendo...");
-                    audioContext.resume();
+                    await audioContext.resume();
+                    console.log("AudioContext reanudado exitosamente");
                 }
                 
                 // Crear sonido

@@ -10,14 +10,15 @@ class SoundManager {
     }
 
     // Inicializar AudioContext
-    initAudioContext() {
+    async initAudioContext() {
         try {
             if (!this.audioContext) {
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
             // Resume el contexto de audio si está suspended
             if (this.audioContext.state === 'suspended') {
-                this.audioContext.resume().catch(e => console.error('Error resumiendo audio:', e));
+                await this.audioContext.resume();
+                console.log('✅ AudioContext reanudado');
             }
         } catch (e) {
             console.error('Error inicializando AudioContext:', e);
@@ -25,10 +26,10 @@ class SoundManager {
     }
 
     // Crear sonidos simples usando Web Audio API (sin archivos externos)
-    createBeep(frequency = 800, duration = 200, type = 'sine') {
+    async createBeep(frequency = 800, duration = 200, type = 'sine') {
         try {
             // Asegurar que el contexto está inicializado
-            this.initAudioContext();
+            await this.initAudioContext();
             
             if (!this.audioContext) {
                 console.error('AudioContext no disponible');

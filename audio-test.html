@@ -93,7 +93,7 @@
             console.log(msg);
         }
         
-        function ensureAudioContext() {
+        async function ensureAudioContext() {
             if (!audioContext) {
                 try {
                     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -106,16 +106,22 @@
             
             if (audioContext.state === 'suspended') {
                 log('⚠️ AudioContext suspended, resumiendo...');
-                audioContext.resume().then(() => log('✅ Reanudado'));
+                try {
+                    await audioContext.resume();
+                    log('✅ Reanudado exitosamente');
+                } catch (e) {
+                    log('❌ Error reanudando: ' + e.message);
+                    return false;
+                }
             }
             
             return true;
         }
         
-        function playTone() {
+        async function playTone() {
             log('--- BOTÓN 1: SONIDO 880Hz ---');
             
-            if (!ensureAudioContext()) {
+            if (!await ensureAudioContext()) {
                 document.getElementById('status').innerHTML = '❌ Web Audio API no disponible';
                 return;
             }
@@ -146,10 +152,10 @@
             }
         }
         
-        function playSequence() {
+        async function playSequence() {
             log('--- BOTÓN 2: SECUENCIA ---');
             
-            if (!ensureAudioContext()) {
+            if (!await ensureAudioContext()) {
                 document.getElementById('status').innerHTML = '❌ Web Audio API no disponible';
                 return;
             }
@@ -188,10 +194,10 @@
             document.getElementById('status').innerHTML = '✅ 4 Beeps iniciados<br>Espera 2 segundos...';
         }
         
-        function playLoud() {
+        async function playLoud() {
             log('--- BOTÓN 3: MÁS FUERTE ---');
             
-            if (!ensureAudioContext()) {
+            if (!await ensureAudioContext()) {
                 document.getElementById('status').innerHTML = '❌ Web Audio API no disponible';
                 return;
             }
