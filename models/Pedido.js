@@ -8,7 +8,7 @@ const pedidoSchema = new mongoose.Schema({
         max: 20
     },
     items: [{
-        _id: mongoose.Schema.Types.ObjectId,
+        productoId: mongoose.Schema.Types.ObjectId,
         nombre: String,
         precio: Number,
         cantidad: Number
