@@ -118,6 +118,30 @@ body {
     flex: 1;
 }
 
+.current-section-display {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1.25rem;
+    background: rgba(236, 72, 153, 0.1);
+    border: 1px solid var(--secondary);
+    border-radius: 999px;
+    color: var(--secondary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.section-icon {
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+}
+
+.section-name {
+    white-space: nowrap;
+}
+
 .btn-status {
     display: flex;
     align-items: center;

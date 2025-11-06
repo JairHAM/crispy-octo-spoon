@@ -46,7 +46,6 @@ function selectMesa(mesa) {
     document.getElementById('mesa-title').textContent = mesa;
     document.getElementById('mesa-carrito').textContent = mesa;
     document.getElementById('mesa-ordenes').textContent = mesa;
-    document.getElementById('btn-ver-pedidos').style.display = 'flex';
     
     showStep('menu');
     renderProducts(allProducts);
@@ -56,6 +55,8 @@ function showStep(step) {
     document.querySelectorAll('.step-section').forEach(s => s.classList.add('hidden'));
     document.getElementById(`step-${step}`).classList.remove('hidden');
     
+    updateSectionDisplay(step);
+    
     if (step === 'ordenes') {
         loadMesaOrders();
         if (refreshInterval) clearInterval(refreshInterval);
@@ -63,6 +64,22 @@ function showStep(step) {
     } else {
         clearRefreshInterval();
     }
+}
+
+function updateSectionDisplay(step) {
+    const sectionInfo = {
+        'mesa': { icon: 'ri-door-line', name: 'Selecciona Mesa' },
+        'menu': { icon: 'ri-book-line', name: `Menú - Mesa ${selectedMesa}` },
+        'carrito': { icon: 'ri-shopping-cart-line', name: `Tu Pedido - Mesa ${selectedMesa}` },
+        'ordenes': { icon: 'ri-receipt-2-line', name: `Mi Seguimiento - Mesa ${selectedMesa}` }
+    };
+    
+    const info = sectionInfo[step] || sectionInfo['mesa'];
+    const iconElement = document.getElementById('section-icon');
+    const nameElement = document.getElementById('section-name');
+    
+    iconElement.innerHTML = `<i class="${info.icon}"></i>`;
+    nameElement.textContent = info.name;
 }
 
 function renderProducts(products) {
@@ -284,7 +301,6 @@ function resetSelection() {
     showStep('mesa');
     document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('current-mesa').textContent = '-';
-    document.getElementById('btn-ver-pedidos').style.display = 'none';
     clearRefreshInterval();
 }
 
@@ -370,7 +386,6 @@ function goBackToMesa() {
     showStep('mesa');
     document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('current-mesa').textContent = '-';
-    document.getElementById('btn-ver-pedidos').style.display = 'none';
     clearRefreshInterval();
 }
 
