@@ -33,8 +33,13 @@ async function loadProducts() {
             
             // Celda de Disponibilidad
             const dispCell = row.insertCell();
-            dispCell.textContent = product.disponible ? 'Sí' : 'No';
-            dispCell.style.color = product.disponible ? 'green' : 'red';
+            // Compatibilidad: algunos documentos antiguos pueden usar la propiedad
+            // 'disponibilidad' en lugar de 'disponible'. Normalizamos aquí.
+            const isAvailable = (product.disponible !== undefined)
+                ? product.disponible
+                : (product.disponibilidad !== undefined ? product.disponibilidad : true);
+            dispCell.textContent = isAvailable ? 'Sí' : 'No';
+            dispCell.style.color = isAvailable ? 'green' : 'red';
             
             // Celda de Acciones (Botones)
             const actionCell = row.insertCell();
@@ -113,7 +118,11 @@ function fillFormForEdit(product) {
     document.getElementById('nombre').value = product.nombre;
     document.getElementById('precio').value = product.precio;
     document.getElementById('categoria').value = product.categoria;
-    document.getElementById('disponible').checked = product.disponible;
+    // Compatibilidad con campo antiguo 'disponibilidad'
+    const isAvailable = (product.disponible !== undefined)
+        ? product.disponible
+        : (product.disponibilidad !== undefined ? product.disponibilidad : false);
+    document.getElementById('disponible').checked = isAvailable;
 
     submitButton.textContent = 'Guardar Cambios';
     cancelButton.style.display = 'inline-block';
