@@ -5,7 +5,10 @@ const cors = require('cors'); // Necesario para la conexión con GitHub Pages
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
+// express-mongo-sanitize causa un error en algunas versiones de Express/Node en Render
+// al intentar reasignar `req.query` (getter-only). Sustituimos por un saneador
+// ligero que solo modifica `req.body` y `req.params`.
+// const mongoSanitize = require('express-mongo-sanitize');
 const morgan = require('morgan');
 require('dotenv').config(); 
 
@@ -43,7 +46,29 @@ app.use(cors(corsOptions));
 // SECURITY & PERFORMANCE MIDDLEWARE
 app.use(helmet());
 app.use(compression());
-app.use(mongoSanitize());
+// Reemplazo seguro: eliminar claves que empiezan por '$' o contienen '.'
+function sanitizeObject(obj) {
+  if (!obj || typeof obj !== 'object') return;
+  for (const key of Object.keys(obj)) {
+    if (key.startsWith('$') || key.indexOf('.') !== -1) {
+      delete obj[key];
+    } else {
+      sanitizeObject(obj[key]);
+    }
+  }
+}
+
+app.use((req, res, next) => {
+  try {
+    sanitizeObject(req.body);
+    sanitizeObject(req.params);
+    // NO modificamos req.query (puede ser getter-only en algunos entornos)
+  } catch (err) {
+    // si algo falla, no bloqueamos la petición; registramos y continuamos
+    console.error('Sanitization error:', err);
+  }
+  next();
+});
 // Logger (morgan) - usar en desarrollo
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
