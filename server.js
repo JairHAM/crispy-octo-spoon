@@ -46,7 +46,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.use(helmet());
+// Helmet con CSP deshabilitado para permitir scripts inline
+app.use(helmet({
+  contentSecurityPolicy: false
+}));
 app.use(compression());
 // Reemplazo seguro: eliminar claves que empiezan por '$' o contienen '.'
 function sanitizeObject(obj) {
