@@ -1,14 +1,5 @@
 const API = 'https://crispy-octo-spoon.onrender.com/api/productos';
-const DOM = {
-    form: document.getElementById('product-form'),
-    submitBtn: document.getElementById('submit-button'),
-    cancelBtn: document.getElementById('cancel-button'),
-    container: document.getElementById('products-container'),
-    productId: document.getElementById('product-id'),
-    count: document.getElementById('product-count'),
-    toast: document.getElementById('notification'),
-};
-
+let DOM = {};
 let isEdit = false;
 let pollInterval = null;
 
@@ -89,7 +80,7 @@ function escape(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-DOM.form.addEventListener('submit', async (e) => {
+async function handleFormSubmit(e) {
     e.preventDefault();
     const data = {
         nombre: document.getElementById('nombre').value.trim(),
@@ -126,7 +117,7 @@ DOM.form.addEventListener('submit', async (e) => {
     } finally {
         DOM.submitBtn.disabled = false;
     }
-});
+}
 
 async function editProduct(id) {
     try {
@@ -149,8 +140,6 @@ async function editProduct(id) {
         notify('No se pudo cargar el producto', true);
     }
 }
-
-DOM.cancelBtn.addEventListener('click', resetForm);
 
 function resetForm() {
     DOM.form.reset();
@@ -190,6 +179,21 @@ function updateCount(count) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize DOM elements
+    DOM = {
+        form: document.getElementById('product-form'),
+        submitBtn: document.getElementById('submit-button'),
+        cancelBtn: document.getElementById('cancel-button'),
+        container: document.getElementById('products-container'),
+        productId: document.getElementById('product-id'),
+        count: document.getElementById('product-count'),
+        toast: document.getElementById('notification'),
+    };
+
+    // Add event listeners
+    DOM.form.addEventListener('submit', handleFormSubmit);
+    DOM.cancelBtn.addEventListener('click', resetForm);
+
     loadProducts();
     startPolling();
     window.addEventListener('beforeunload', stopPolling);

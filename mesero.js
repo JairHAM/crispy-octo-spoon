@@ -323,7 +323,7 @@ function getElapsedTime(createdAt) {
 }
 
 function showToast(msg, type = 'success') {
-    const toast = document.getElementById('toast');
+    const toast = document.getElementById('notification');
     toast.className = `toast ${type}`;
     document.getElementById('toast-message').textContent = msg;
     toast.style.display = 'flex';
