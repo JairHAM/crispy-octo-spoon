@@ -46,6 +46,12 @@ function displayOrdersByStatus(orders) {
             const oldState = previousOrderStates[orderId];
             const newState = order.estado;
             
+            // Si es un NUEVO pedido (no existe en previousOrderStates)
+            if (!oldState) {
+                console.log(`🆕 Nuevo pedido detectado: ${orderId}`);
+                // No sonar aquí en mesero, solo en cocina
+            }
+            
             // Si el estado cambió
             if (oldState && oldState !== newState) {
                 console.log(`Pedido ${orderId}: ${oldState} → ${newState}`);

@@ -2,6 +2,7 @@ const API = 'https://crispy-octo-spoon.onrender.com/api';
 
 let orders = [];
 let refreshInterval = null;
+let previousOrderIds = []; // Guardar IDs anteriores para detectar nuevos
 
 async function init() {
     await loadOrders();
@@ -13,18 +14,31 @@ async function loadOrders() {
         const res = await fetch(`${API}/pedidos`);
         const newOrders = await res.json();
         
-        // Detectar si hay nuevos pedidos en estado "pendiente"
-        const newPendingOrders = newOrders.filter(o => o.estado === 'pendiente');
-        const oldPendingCount = orders.filter(o => o.estado === 'pendiente').length;
+        // Obtener IDs de pedidos actuales
+        const currentOrderIds = newOrders.map(o => o._id);
+        
+        // Detectar NUEVOS pedidos comparando IDs
+        const newPedidoIds = currentOrderIds.filter(id => !previousOrderIds.includes(id));
+        
+        // Si hay nuevos pedidos, sonar
+        if (newPedidoIds.length > 0 && typeof soundManager !== 'undefined') {
+            console.log('🔊 Nuevos pedidos detectados:', newPedidoIds);
+            soundManager.playNewOrder();
+        }
+        
+        // Detectar cambios de estado en pedidos existentes
+        newOrders.forEach(newOrder => {
+            const oldOrder = orders.find(o => o._id === newOrder._id);
+            if (oldOrder && oldOrder.estado !== newOrder.estado) {
+                console.log(`Estado cambió: ${oldOrder._id} ${oldOrder.estado} → ${newOrder.estado}`);
+            }
+        });
         
         console.log('Total pedidos en BD:', newOrders.length);
         console.log('Estados:', newOrders.map(o => o.estado));
         
-        // Si hay más pedidos pendientes que antes, reproducir sonido de nuevo pedido
-        if (newPendingOrders.length > oldPendingCount && typeof soundManager !== 'undefined') {
-            soundManager.playNewOrder();
-        }
-        
+        // Guardar estado actual
+        previousOrderIds = currentOrderIds;
         orders = newOrders;
         renderOrders();
         updateStats();
