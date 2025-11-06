@@ -60,7 +60,7 @@
         <button onclick="sonarAhora()">PRESIONA PARA SONAR</button>
         
         <div id="resultado" class="resultado">
-            <p id="texto">Estado...</p>
+            <div id="texto">Estado...</div>
         </div>
     </div>
 
@@ -72,6 +72,13 @@
             
             const el = document.getElementById('resultado');
             const txt = document.getElementById('texto');
+            
+            // Verificar que los elementos existen
+            if (!el || !txt) {
+                console.error('❌ Elementos del DOM no encontrados', { el, txt });
+                alert('Error: Elementos del DOM no encontrados');
+                return;
+            }
             
             try {
                 // Crear contexto de audio UNA SOLA VEZ
@@ -87,7 +94,7 @@
                 if (audioContext.state === 'suspended') {
                     console.log("AudioContext suspended, resumiendo...");
                     await audioContext.resume();
-                    console.log("AudioContext reanudado exitosamente");
+                    console.log("✅ AudioContext reanudado exitosamente");
                 }
                 
                 // Crear sonido
@@ -108,20 +115,35 @@
                 osc.start(now);
                 osc.stop(now + 1.0);
                 
-                console.log("Sonido iniciado");
+                console.log("✅ Sonido iniciado correctamente");
                 txt.innerHTML = "✅ Sonido reproducido (1 segundo)<br><br>¿LO ESCUCHASTE?";
                 
             } catch (e) {
-                console.error("ERROR:", e);
-                txt.innerHTML = "❌ ERROR: " + e.message;
-                el.classList.add('show');
+                console.error("❌ ERROR completo:", e);
+                console.error("Stack:", e.stack);
+                if (txt) {
+                    txt.innerHTML = "❌ ERROR: " + e.message;
+                }
+                if (el) {
+                    el.classList.add('show');
+                }
             }
         }
         
-        // Log inicial
-        console.log("Página cargada correctamente");
-        document.getElementById('resultado').innerHTML = "<p>✅ Página lista. Presiona el botón arriba.</p>";
-        document.getElementById('resultado').classList.add('show');
+        // Esperar a que el DOM esté completamente cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("✅ DOM cargado correctamente");
+            const resultado = document.getElementById('resultado');
+            const texto = document.getElementById('texto');
+            
+            if (resultado && texto) {
+                texto.innerHTML = "<p>✅ Página lista. Presiona el botón arriba.</p>";
+                resultado.classList.add('show');
+                console.log("✅ Elementos del DOM inicializados");
+            } else {
+                console.error("❌ No se encontraron elementos", { resultado, texto });
+            }
+        });
     </script>
 </body>
 </html>

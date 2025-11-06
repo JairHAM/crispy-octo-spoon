@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Audio Simple</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0f172a;
+            color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container {
+            background: #1e293b;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            padding: 3rem;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #6366f1;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+        p {
+            color: #cbd5e1;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            margin: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .output {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid #6366f1;
+            border-radius: 8px;
+            min-height: 60px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .output > div {
+            margin: 4px 0;
+            padding: 4px;
+        }
+        .success { color: #22c55e; }
+        .warning { color: #f59e0b; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊</h1>
+        <h2 style="color: #cbd5e1; margin-bottom: 1.5rem;">Test de Audio</h2>
+        
+        <button onclick="playSimple()">PRUEBA 1: Sonido Simple (880Hz)</button>
+        <button onclick="playLoud()">PRUEBA 2: Sonido Fuerte (1000Hz)</button>
+        <button onclick="playSequence()">PRUEBA 3: Secuencia (4 Tonos)</button>
+        
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        let audioContext = null;
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const line = document.createElement('div');
+            line.className = type;
+            const time = new Date().toLocaleTimeString();
+            line.textContent = `[${time}] ${message}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function getAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    log('✅ AudioContext creado', 'success');
+                } catch (e) {
+                    log('❌ Error creando AudioContext: ' + e.message, 'error');
+                    return null;
+                }
+            }
+            return audioContext;
+        }
+        
+        async function resumeAudioContext() {
+            const ctx = getAudioContext();
+            if (!ctx) return false;
+            
+            if (ctx.state === 'suspended') {
+                log('⚠️ AudioContext suspended, resumiendo...', 'warning');
+                try {
+                    await ctx.resume();
+                    log('✅ AudioContext reanudado', 'success');
+                } catch (e) {
+                    log('❌ Error resumiendo: ' + e.message, 'error');
+                    return false;
+                }
+            }
+            
+            log('ℹ️ AudioContext estado: ' + ctx.state, 'info');
+            return true;
+        }
+        
+        async function playSimple() {
+            log('━━ PRUEBA 1: Sonido Simple 880Hz ━━', 'info');
+            
+            if (!await resumeAudioContext()) return;
+            
+            try {
+                const ctx = audioContext;
+                const now = ctx.currentTime;
+                
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.value = 880;
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1);
+                
+                osc.start(now);
+                osc.stop(now + 1);
+                
+                log('✅ Sonido 880Hz iniciado (1 segundo)', 'success');
+                log('👂 ¿Escuchas el tono?', 'info');
+                
+            } catch (e) {
+                log('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        async function playLoud() {
+            log('━━ PRUEBA 2: Sonido Fuerte 1000Hz ━━', 'info');
+            
+            if (!await resumeAudioContext()) return;
+            
+            try {
+                const ctx = audioContext;
+                const now = ctx.currentTime;
+                
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.value = 1000;
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                gain.gain.setValueAtTime(0.8, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 2);
+                
+                osc.start(now);
+                osc.stop(now + 2);
+                
+                log('✅ Sonido 1000Hz FUERTE iniciado (2 segundos)', 'success');
+                log('👂 ¿ESCUCHAS AHORA?', 'info');
+                
+            } catch (e) {
+                log('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        async function playSequence() {
+            log('━━ PRUEBA 3: Secuencia de 4 Tonos ━━', 'info');
+            
+            if (!await resumeAudioContext()) return;
+            
+            const frequencies = [440, 550, 660, 880];
+            let i = 0;
+            
+            for (const freq of frequencies) {
+                setTimeout(() => {
+                    try {
+                        const ctx = audioContext;
+                        const now = ctx.currentTime;
+                        
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                        
+                        osc.start(now);
+                        osc.stop(now + 0.4);
+                        
+                        log(`  🔊 Tono ${i + 1}/4: ${freq}Hz`, 'info');
+                        
+                    } catch (e) {
+                        log('❌ Error en tono ' + (i + 1) + ': ' + e.message, 'error');
+                    }
+                }, i * 500);
+                
+                i++;
+            }
+            
+            log('✅ Secuencia iniciada (4 tonos en 2 segundos)', 'success');
+        }
+        
+        // Log inicial
+        log('✅ Página lista, presiona cualquier botón', 'success');
+        log('ℹ️ Abre F12 si quieres ver detalles técnicos', 'info');
+    </script>
+</body>
+</html>
