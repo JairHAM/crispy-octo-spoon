@@ -91,6 +91,25 @@ function renderProducts(products) {
         
         container.appendChild(card);
     });
+    
+    attachFilterListeners();
+}
+
+function attachFilterListeners() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const category = e.target.dataset.category;
+            if (category === 'todas') {
+                filteredProducts = allProducts;
+            } else {
+                filteredProducts = allProducts.filter(p => p.categoria === category);
+            }
+            renderProducts(filteredProducts);
+        });
+    });
 }
 
 function getCategoryEmoji(cat) {
@@ -140,20 +159,22 @@ function updateCart() {
     renderProducts(filteredProducts);
 }
 
-document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        
-        const category = e.target.dataset.category;
-        if (category === 'todas') {
-            filteredProducts = allProducts;
-        } else {
-            filteredProducts = allProducts.filter(p => p.categoria === category);
-        }
-        renderProducts(filteredProducts);
+function attachFilterListeners() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const category = e.target.dataset.category;
+            if (category === 'todas') {
+                filteredProducts = allProducts;
+            } else {
+                filteredProducts = allProducts.filter(p => p.categoria === category);
+            }
+            renderProducts(filteredProducts);
+        });
     });
-});
+}
 
 function backToMenu() {
     showStep('menu');
