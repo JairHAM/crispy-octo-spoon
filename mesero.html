@@ -13,16 +13,23 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --dark-bg: #0f172a;
+            --dark-surface: #1e293b;
+            --dark-border: #334155;
+            --dark-text: #f1f5f9;
+            --dark-text-secondary: #cbd5e1;
         }
         
         body {
-            background: #f8f9fa;
+            background: var(--dark-bg);
+            color: var(--dark-text);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
         .navbar {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: var(--dark-surface);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--dark-border);
         }
         
         .navbar-brand {
@@ -54,10 +61,10 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            background: white;
+            background: var(--dark-surface);
             text-align: center;
             padding: 1.5rem;
-            border: 2px solid #e5e7eb;
+            border: 2px solid var(--dark-border);
         }
         
         .card-mesa:hover {
@@ -84,7 +91,7 @@
         }
         
         .btn-primary:hover {
-            background: #4f46e5;
+            background: #7c8ff8;
         }
         
         .btn-secondary {
@@ -93,30 +100,31 @@
         }
         
         .btn-secondary:hover {
-            background: #d946a6;
+            background: #f472b6;
         }
         
         .producto-item {
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--dark-border);
             border-radius: 8px;
             padding: 1rem;
-            background: white;
+            background: var(--dark-surface);
             transition: all 0.2s ease;
         }
         
         .producto-item:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
             border-color: var(--primary);
         }
         
         .producto-nombre {
             font-weight: 600;
             margin-bottom: 0.5rem;
+            color: var(--dark-text);
         }
         
         .producto-categoria {
             font-size: 0.85rem;
-            color: #6b7280;
+            color: var(--dark-text-secondary);
             margin-bottom: 0.5rem;
         }
         
@@ -137,12 +145,13 @@
         .qty-control button {
             width: 32px;
             height: 32px;
-            border: 1px solid #d1d5db;
-            background: white;
+            border: 1px solid var(--dark-border);
+            background: var(--dark-surface);
             border-radius: 4px;
             cursor: pointer;
             font-weight: 700;
             transition: all 0.2s ease;
+            color: var(--dark-text);
         }
         
         .qty-control button:hover {
@@ -155,16 +164,18 @@
             min-width: 30px;
             text-align: center;
             font-weight: 600;
+            color: var(--dark-text);
         }
         
         .filter-badge {
             padding: 0.5rem 1rem;
             border-radius: 20px;
-            background: white;
-            border: 1px solid #d1d5db;
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 0.9rem;
+            color: var(--dark-text);
         }
         
         .filter-badge.active {
@@ -178,10 +189,10 @@
         }
         
         .carrito-item {
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--dark-border);
             border-radius: 6px;
             padding: 1rem;
-            background: white;
+            background: var(--dark-surface);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -192,10 +203,11 @@
             margin: 0;
             font-weight: 600;
             margin-bottom: 0.25rem;
+            color: var(--dark-text);
         }
         
         .item-info small {
-            color: #6b7280;
+            color: var(--dark-text-secondary);
         }
         
         .item-price {
@@ -214,11 +226,12 @@
         }
         
         .btn-delete:hover {
-            color: #dc2626;
+            color: #fca5a5;
         }
         
         .carrito-total {
-            background: #f3f4f6;
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
             padding: 1rem;
             border-radius: 8px;
             display: flex;
@@ -227,14 +240,15 @@
             font-weight: 700;
             font-size: 1.1rem;
             margin-top: 1rem;
+            color: var(--dark-text);
         }
         
         .order-card {
             border-left: 4px solid var(--secondary);
             border-radius: 6px;
             padding: 1rem;
-            background: white;
-            border: 1px solid #e5e7eb;
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
             margin-bottom: 0.75rem;
         }
         
@@ -247,7 +261,7 @@
         
         .order-items {
             font-size: 0.85rem;
-            color: #4b5563;
+            color: var(--dark-text-secondary);
             margin-bottom: 0.35rem;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -259,7 +273,7 @@
         
         .order-time {
             font-size: 0.75rem;
-            color: #9ca3af;
+            color: var(--dark-text-secondary);
             font-weight: 600;
         }
         
@@ -269,23 +283,26 @@
             justify-content: center;
             width: 28px;
             height: 28px;
-            background: #f3f4f6;
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
             border-radius: 50%;
             font-weight: 700;
             font-size: 0.85rem;
             margin-left: 0.5rem;
+            color: var(--dark-text);
         }
         
         .section-title {
             font-weight: 700;
             margin-bottom: 1rem;
             font-size: 1.1rem;
+            color: var(--dark-text);
         }
         
         .empty-state {
             text-align: center;
             padding: 2rem;
-            color: #9ca3af;
+            color: var(--dark-text-secondary);
         }
         
         .empty-state i {
@@ -311,10 +328,10 @@
         }
         
         .orders-column {
-            background: white;
+            background: var(--dark-surface);
             border-radius: 8px;
             padding: 1.5rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--dark-border);
         }
         
         .orders-column.pending {
@@ -335,7 +352,7 @@
             align-items: center;
             margin-bottom: 1rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--dark-border);
         }
         
         .column-header h6 {
@@ -344,32 +361,35 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            color: var(--dark-text);
         }
         
         .toast {
             position: fixed;
             bottom: 2rem;
             right: 2rem;
-            background: white;
+            background: var(--dark-surface);
             border-radius: 8px;
             padding: 1rem 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             gap: 0.75rem;
             font-size: 0.95rem;
             animation: slideIn 0.3s ease;
             z-index: 1000;
+            border: 1px solid var(--dark-border);
+            color: var(--dark-text);
         }
         
         .toast.success {
-            border-left: 4px solid var(--success);
-            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
         }
         
         .toast.error {
-            border-left: 4px solid var(--danger);
-            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger);
         }
         
         @keyframes slideIn {
