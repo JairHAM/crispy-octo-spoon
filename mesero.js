@@ -115,7 +115,17 @@ function decreaseQty(id) {
 }
 
 function updateCart() {
-    document.getElementById('cart-count').textContent = cart.reduce((sum, item) => sum + item.cantidad, 0);
+    const cartCount = cart.reduce((sum, item) => sum + item.cantidad, 0);
+    document.getElementById('cart-count').textContent = cartCount;
+    document.getElementById('cart-badge').textContent = cartCount;
+    
+    const cartButton = document.getElementById('cart-button');
+    if (cartCount > 0) {
+        cartButton.style.display = 'flex';
+    } else {
+        cartButton.style.display = 'none';
+    }
+    
     renderProducts(filteredProducts);
 }
 
@@ -136,6 +146,59 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 
 function backToMenu() {
     showStep('menu');
+}
+
+function showCart() {
+    if (!cart.length) {
+        notify('Agrega platos al carrito', true);
+        return;
+    }
+    
+    renderCartItems();
+    showStep('carrito');
+}
+
+function renderCartItems() {
+    const container = document.getElementById('carrito-items');
+    container.innerHTML = '';
+    
+    let total = 0;
+    cart.forEach(item => {
+        const subtotal = item.precio * item.cantidad;
+        total += subtotal;
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'carrito-item';
+        itemDiv.innerHTML = `
+            <div class="item-info">
+                <div class="item-name">${item.nombre}</div>
+                <div class="item-qty">Cantidad: ${item.cantidad}</div>
+            </div>
+            <div class="item-price">S/. ${subtotal.toFixed(2)}</div>
+            <button class="item-delete" onclick="removeFromCart('${item._id}')">
+                <i class="ri-delete-bin-line"></i>
+            </button>
+        `;
+        container.appendChild(itemDiv);
+    });
+    
+    const totalDiv = document.createElement('div');
+    totalDiv.className = 'carrito-total';
+    totalDiv.innerHTML = `
+        <span>Total</span>
+        <span>S/. ${total.toFixed(2)}</span>
+    `;
+    container.appendChild(totalDiv);
+}
+
+function removeFromCart(id) {
+    cart = cart.filter(i => i._id !== id);
+    updateCart();
+    if (cart.length === 0) {
+        showStep('menu');
+    } else {
+        renderCartItems();
+    }
 }
 
 async function sendOrder() {

@@ -79,6 +79,15 @@
             <div class="productos-grid" id="productos-container">
                 <!-- Productos generados dinámicamente -->
             </div>
+
+            <div class="menu-actions">
+                <button class="btn btn-secondary" onclick="resetSelection()">
+                    <i class="ri-arrow-left-line"></i> Cambiar Mesa
+                </button>
+                <button class="btn btn-primary" id="cart-button" onclick="showCart()" style="display: none;">
+                    <i class="ri-shopping-cart-line"></i> Ver Carrito (<span id="cart-badge">0</span>)
+                </button>
+            </div>
         </section>
 
         <section class="step-section hidden" id="step-carrito">
