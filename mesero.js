@@ -43,6 +43,7 @@ function selectMesa(mesa) {
     document.getElementById('mesa-title').textContent = mesa;
     document.getElementById('mesa-carrito').textContent = mesa;
     document.getElementById('mesa-ordenes').textContent = mesa;
+    document.getElementById('btn-ver-pedidos').style.display = 'flex';
     
     showStep('menu');
     renderProducts(allProducts);
@@ -259,6 +260,7 @@ function resetSelection() {
     showStep('mesa');
     document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('current-mesa').textContent = '-';
+    document.getElementById('btn-ver-pedidos').style.display = 'none';
     clearRefreshInterval();
 }
 
@@ -344,6 +346,7 @@ function goBackToMesa() {
     showStep('mesa');
     document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('current-mesa').textContent = '-';
+    document.getElementById('btn-ver-pedidos').style.display = 'none';
     clearRefreshInterval();
 }
 
@@ -351,6 +354,11 @@ function newOrder() {
     cart = [];
     updateCart();
     showStep('menu');
+}
+
+function viewMesaOrders() {
+    loadMesaOrders();
+    showStep('ordenes');
 }
 
 function clearRefreshInterval() {

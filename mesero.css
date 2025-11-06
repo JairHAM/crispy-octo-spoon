@@ -112,6 +112,37 @@ body {
     font-size: 1.125rem;
 }
 
+.navbar-center {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+}
+
+.btn-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(236, 72, 153, 0.15);
+    border: 2px solid var(--secondary);
+    border-radius: 999px;
+    color: var(--secondary);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-status:hover {
+    background: rgba(236, 72, 153, 0.25);
+    transform: scale(1.05);
+}
+
+.btn-status i {
+    font-size: 1.25rem;
+}
+
 .container {
     max-width: 1400px;
     margin: 0 auto;
