@@ -1,0 +1,21 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://crispy-octo-spoon.onrender.com/api/productos)
+          echo "✅ Backend pinged - Status: $response"
+          if [ "$response" != "200" ]; then
+            echo "⚠️ Unexpected status code: $response"
+          fi
+
+      - name: Log
+        run: echo "Keep Render alive - $(date)"
