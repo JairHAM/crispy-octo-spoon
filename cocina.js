@@ -59,7 +59,7 @@ function createOrderCard(order, section) {
     const div = document.createElement('div');
     div.className = `order-card ${section}`;
     
-    const elapsed = getElapsedTime(order.createdAt);
+    const elapsed = getElapsedTime(order.fechaCreacion || order.createdAt);
     const items = order.items.map(i => `${i.nombre} (${i.cantidad})`).join(', ');
     
     div.innerHTML = `

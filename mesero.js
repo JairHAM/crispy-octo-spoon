@@ -47,7 +47,7 @@ function displayOrdersByStatus(orders) {
 
 function createOrderCard(order) {
     const items = order.items.map(i => `${i.nombre} (${i.cantidad})`).join(', ');
-    const elapsed = getElapsedTime(order.createdAt);
+    const elapsed = getElapsedTime(order.fechaCreacion || order.createdAt);
     
     return `
         <div class="order-card">
@@ -104,6 +104,7 @@ function renderProducts() {
     products.forEach(p => {
         const div = document.createElement('div');
         div.className = 'col-6 col-md-4 col-lg-3';
+        div.setAttribute('data-product-id', p._id);
         const cartItem = cart.find(c => c._id === p._id);
         const qty = cartItem ? cartItem.cantidad : 0;
         
@@ -143,8 +144,18 @@ function decreaseQty(id) {
 }
 
 function updateCart() {
-    document.getElementById('cart-count').textContent = cart.reduce((sum, item) => sum + item.cantidad, 0);
-    renderProducts();
+    const cartCount = cart.reduce((sum, item) => sum + item.cantidad, 0);
+    const cartCountEl = document.getElementById('cart-count');
+    if (cartCountEl) cartCountEl.textContent = cartCount;
+    
+    // Actualizar solo las cantidades, no re-renderizar todo
+    const container = document.getElementById('productos-container');
+    if (container && container.children.length > 0) {
+        cart.forEach(item => {
+            const qtyDisplay = document.querySelector(`[data-product-id="${item._id}"] .qty-display`);
+            if (qtyDisplay) qtyDisplay.textContent = item.cantidad;
+        });
+    }
 }
 
 function filterProducts(category) {
@@ -159,6 +170,7 @@ function filterProducts(category) {
     filtered.forEach(p => {
         const div = document.createElement('div');
         div.className = 'col-6 col-md-4 col-lg-3';
+        div.setAttribute('data-product-id', p._id);
         const cartItem = cart.find(c => c._id === p._id);
         const qty = cartItem ? cartItem.cantidad : 0;
         

@@ -5,11 +5,16 @@ let pollInterval = null;
 
 function startPolling() {
     if (pollInterval) return;
-    pollInterval = setInterval(() => {
-        fetch(API).then(r => r.json()).then(p => { 
+    pollInterval = setInterval(async () => {
+        try {
+            const res = await fetch(API);
+            if (!res.ok) throw new Error('API error');
+            const p = await res.json();
             renderProducts(p);
             updateCount(p.length);
-        }).catch(e => console.log('Polling error:', e));
+        } catch (e) {
+            console.log('Polling error:', e.message);
+        }
     }, 5000);
 }
 
