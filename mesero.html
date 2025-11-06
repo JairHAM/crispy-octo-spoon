@@ -2,224 +2,563 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mesero - El Enkanto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css">
-    <link rel="stylesheet" href="mesero.css">
     <style>
-        input, select, textarea { font-size: 16px !important; }
-        @supports (padding: max(0px)) {
-            body { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        body {
+            background: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary) !important;
+        }
+        
+        .navbar-brand i {
+            margin-right: 0.5rem;
+        }
+        
+        .section-display {
+            font-weight: 600;
+            color: var(--secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .container-main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .card-mesa {
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            text-align: center;
+            padding: 1.5rem;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .card-mesa:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .card-mesa.active {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+        }
+        
+        .card-mesa i {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            border: none;
+        }
+        
+        .btn-secondary:hover {
+            background: #d946a6;
+        }
+        
+        .producto-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            background: white;
+            transition: all 0.2s ease;
+        }
+        
+        .producto-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+        
+        .producto-nombre {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .producto-categoria {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+        
+        .producto-precio {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 0.75rem;
+        }
+        
+        .qty-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .qty-control button {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        
+        .qty-control button:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .qty-display {
+            min-width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .filter-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: white;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .filter-badge.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .filter-badge:hover {
+            border-color: var(--primary);
+        }
+        
+        .carrito-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 1rem;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .item-info h6 {
+            margin: 0;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .item-info small {
+            color: #6b7280;
+        }
+        
+        .item-price {
+            font-weight: 700;
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+        
+        .btn-delete {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .btn-delete:hover {
+            color: #dc2626;
+        }
+        
+        .carrito-total {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+        
+        .order-card {
+            border-left: 4px solid var(--secondary);
+            border-radius: 6px;
+            padding: 1rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 0.75rem;
+        }
+        
+        .order-mesa {
+            font-weight: 700;
+            color: var(--secondary);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .order-items {
+            font-size: 0.85rem;
+            color: #4b5563;
+            margin-bottom: 0.35rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .order-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-weight: 600;
+        }
+        
+        .badge-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: #f3f4f6;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-left: 0.5rem;
+        }
+        
+        .section-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #9ca3af;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .step {
+            display: none;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .orders-column {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .orders-column.pending {
+            border-top: 3px solid var(--warning);
+        }
+        
+        .orders-column.preparing {
+            border-top: 3px solid var(--primary);
+        }
+        
+        .orders-column.ready {
+            border-top: 3px solid var(--success);
+        }
+        
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .column-header h6 {
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.success {
+            border-left: 4px solid var(--success);
+            color: var(--success);
+        }
+        
+        .toast.error {
+            border-left: 4px solid var(--danger);
+            color: var(--danger);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container-main {
+                padding: 1rem 0.75rem;
+            }
+            
+            .orders-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <header class="navbar">
-        <div class="navbar-container">
-            <div class="navbar-brand">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
                 <i class="ri-restaurant-2-line"></i>
-                <span>El Enkanto - Mesero</span>
-            </div>
-            <div class="navbar-stats">
-                <div class="stat-item">
-                    <span class="stat-label">Mesa</span>
-                    <span class="stat-value" id="current-mesa">-</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Platos</span>
-                    <span class="stat-value" id="cart-count">0</span>
-                </div>
-            </div>
-            <div class="navbar-center">
-                <div class="current-section-display">
-                    <span id="section-icon" class="section-icon"><i class="ri-door-line"></i></span>
-                    <span id="section-name" class="section-name">Selecciona Mesa</span>
-                </div>
-                <button class="btn-status" id="btn-ver-pedidos" onclick="viewMesaOrders()" style="display: none;" title="Ver mis pedidos">
-                    <i class="ri-receipt-2-line"></i>
-                    <span>Mi Seguimiento</span>
+                El Enkanto
+            </a>
+            <span class="section-display" id="section-display" style="display: none;">
+                <i class="ri-door-line" id="section-icon"></i>
+                <span id="section-name">Mesero</span>
+            </span>
+            <div class="ms-auto d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm" id="btn-seguimiento" onclick="viewMesaOrders()" style="display: none;">
+                    <i class="ri-receipt-2-line"></i> Mi Seguimiento
                 </button>
-            </div>
-            <div class="navbar-actions">
-                <a href="admin.html" class="btn-nav" title="Ir a Admin">
+                <a href="admin.html" class="btn btn-outline-primary btn-sm">
                     <i class="ri-settings-line"></i>
-                    <span>Admin</span>
                 </a>
-                <a href="cocina.html" class="btn-nav" title="Ir a Cocina">
-                    <i class="ri-restaurant-line"></i>
-                    <span>Cocina</span>
+                <a href="cocina.html" class="btn btn-outline-primary btn-sm">
+                    <i class="ri-fire-line"></i>
                 </a>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <main class="container">
-        <section class="all-orders-panel">
-            <h3><i class="ri-receipt-list-line"></i> Estado de Todos los Pedidos</h3>
-            <div class="all-orders-container">
-                <div class="orders-column all-pending">
-                    <div class="orders-header-small">
-                        <span><i class="ri-time-line"></i> Pendiente</span>
-                        <span class="count-badge" id="count-all-pending">0</span>
+    <!-- Container Principal -->
+    <div class="container-main">
+        <!-- Sección: Estado de Todos los Pedidos -->
+        <div class="step active" id="step-inicio">
+            <h5 class="section-title"><i class="ri-receipt-list-line"></i> Estado de Todos los Pedidos</h5>
+            <div class="orders-grid">
+                <div class="orders-column pending">
+                    <div class="column-header">
+                        <h6><i class="ri-time-line"></i> Pendiente</h6>
+                        <span class="badge-count" id="count-pending">0</span>
                     </div>
-                    <div class="orders-list-small" id="orders-all-pending">
-                        <div class="empty-small">—</div>
+                    <div id="orders-pending">
+                        <div class="empty-state"><i class="ri-inbox-line"></i> Sin pedidos</div>
                     </div>
                 </div>
-
-                <div class="orders-column all-preparing">
-                    <div class="orders-header-small">
-                        <span><i class="ri-flashlight-line"></i> Preparando</span>
-                        <span class="count-badge" id="count-all-preparing">0</span>
+                <div class="orders-column preparing">
+                    <div class="column-header">
+                        <h6><i class="ri-flashlight-line"></i> Preparando</h6>
+                        <span class="badge-count" id="count-preparing">0</span>
                     </div>
-                    <div class="orders-list-small" id="orders-all-preparing">
-                        <div class="empty-small">—</div>
+                    <div id="orders-preparing">
+                        <div class="empty-state"><i class="ri-inbox-line"></i> Sin pedidos</div>
                     </div>
                 </div>
-
-                <div class="orders-column all-ready">
-                    <div class="orders-header-small">
-                        <span><i class="ri-check-double-line"></i> Listo</span>
-                        <span class="count-badge" id="count-all-ready">0</span>
+                <div class="orders-column ready">
+                    <div class="column-header">
+                        <h6><i class="ri-check-double-line"></i> Listo</h6>
+                        <span class="badge-count" id="count-ready">0</span>
                     </div>
-                    <div class="orders-list-small" id="orders-all-ready">
-                        <div class="empty-small">—</div>
+                    <div id="orders-ready">
+                        <div class="empty-state"><i class="ri-inbox-line"></i> Sin pedidos</div>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <section class="step-section" id="step-mesa">
-            <div class="section-header">
-                <h2><i class="ri-door-line"></i> Selecciona la Mesa</h2>
-                <p class="section-subtitle">Elige la mesa donde estás atendiendo</p>
-            </div>
-            
-            <div class="mesas-grid" id="mesas-container">
+            <!-- Seleccionar Mesa -->
+            <h5 class="section-title mt-4"><i class="ri-door-line"></i> Selecciona una Mesa</h5>
+            <div class="row g-3" id="mesas-container">
                 <!-- Mesas generadas dinámicamente -->
             </div>
+        </div>
 
-            <button class="btn btn-secondary" onclick="resetSelection()">
-                <i class="ri-refresh-line"></i> Cambiar Mesa
-            </button>
-        </section>
-            </div>
-        </section>
-
-        <section class="step-section hidden" id="step-menu">
-            <div class="section-header">
-                <h2><i class="ri-book-line"></i> Menú - Mesa <span id="mesa-title">0</span></h2>
-                <p class="section-subtitle">Selecciona los platos para el cliente</p>
-            </div>
-
-            <div class="filters">
-                <button class="filter-btn active" data-category="todas">Todas</button>
-                <button class="filter-btn" data-category="Entrada">🥗 Entrada</button>
-                <button class="filter-btn" data-category="Plato Principal">🍽️ Principal</button>
-                <button class="filter-btn" data-category="Bebida">🥤 Bebida</button>
-                <button class="filter-btn" data-category="Postre">🍰 Postre</button>
-                <button class="filter-btn" data-category="Otro">📦 Otro</button>
+        <!-- Sección: Menú -->
+        <div class="step" id="step-menu">
+            <h5 class="section-title"><i class="ri-book-line"></i> Menú</h5>
+            
+            <div class="mb-3">
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="filter-badge active" data-category="todas" onclick="filterProducts('todas')">Todas</button>
+                    <button class="filter-badge" data-category="Entrada" onclick="filterProducts('Entrada')">🥗 Entrada</button>
+                    <button class="filter-badge" data-category="Plato Principal" onclick="filterProducts('Plato Principal')">🍽️ Principal</button>
+                    <button class="filter-badge" data-category="Bebida" onclick="filterProducts('Bebida')">🥤 Bebida</button>
+                    <button class="filter-badge" data-category="Postre" onclick="filterProducts('Postre')">🍰 Postre</button>
+                    <button class="filter-badge" data-category="Otro" onclick="filterProducts('Otro')">📦 Otro</button>
+                </div>
             </div>
 
-            <div class="productos-grid" id="productos-container">
+            <div class="row g-3" id="productos-container">
                 <!-- Productos generados dinámicamente -->
             </div>
 
-            <div class="menu-actions">
-                <button class="btn btn-secondary" onclick="resetSelection()">
+            <div class="d-flex gap-2 mt-4">
+                <button class="btn btn-outline-secondary" onclick="resetSelection()">
                     <i class="ri-arrow-left-line"></i> Cambiar Mesa
                 </button>
-                <button class="btn btn-primary" id="cart-button" onclick="showCart()" style="display: none;">
-                    <i class="ri-shopping-cart-line"></i> Ver Carrito (<span id="cart-badge">0</span>)
+                <button class="btn btn-primary ms-auto" id="btn-carrito" onclick="showCart()" style="display: none;">
+                    <i class="ri-shopping-cart-line"></i> Ver Carrito (<span id="cart-count">0</span>)
                 </button>
             </div>
-        </section>
+        </div>
 
-        <section class="step-section hidden" id="step-carrito">
-            <div class="section-header">
-                <h2><i class="ri-shopping-cart-line"></i> Tu Pedido - Mesa <span id="mesa-carrito">0</span></h2>
-                <p class="section-subtitle">Revisa antes de enviar a cocina</p>
+        <!-- Sección: Carrito -->
+        <div class="step" id="step-carrito">
+            <h5 class="section-title"><i class="ri-shopping-cart-line"></i> Tu Pedido</h5>
+            <div id="carrito-items"></div>
+            <div class="carrito-total">
+                <span>Total</span>
+                <span id="total-price">S/. 0.00</span>
             </div>
-
-            <div class="carrito-items" id="carrito-items">
-                <!-- Items del carrito generados dinámicamente -->
-            </div>
-
-            <div class="carrito-actions">
-                <button class="btn btn-secondary" onclick="backToMenu()">
-                    <i class="ri-arrow-left-line"></i> Agregar Más
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-outline-secondary" onclick="backToMenu()">
+                    <i class="ri-arrow-left-line"></i> Volver al Menú
                 </button>
-                <button class="btn btn-primary" onclick="sendOrder()">
+                <button class="btn btn-primary ms-auto" onclick="sendOrder()">
                     <i class="ri-send-plane-line"></i> Enviar a Cocina
                 </button>
             </div>
-        </section>
+        </div>
 
-        <section class="step-section hidden" id="step-ordenes">
-            <div class="section-header">
-                <h2><i class="ri-receipt-2-line"></i> Mis Pedidos - Mesa <span id="mesa-ordenes">0</span></h2>
-                <p class="section-subtitle">Estado de tus órdenes en cocina</p>
-            </div>
-
-            <div class="ordenes-container">
-                <div class="ordenes-column ordenes-pending">
-                    <div class="ordenes-header">
-                        <h3><i class="ri-time-line"></i> Pendiente</h3>
-                        <span class="ordenes-count" id="count-mesa-pending">0</span>
+        <!-- Sección: Seguimiento -->
+        <div class="step" id="step-seguimiento">
+            <h5 class="section-title"><i class="ri-receipt-2-line"></i> Mi Seguimiento</h5>
+            <div class="orders-grid">
+                <div class="orders-column pending">
+                    <div class="column-header">
+                        <h6><i class="ri-time-line"></i> Pendiente</h6>
+                        <span class="badge-count" id="count-mesa-pending">0</span>
                     </div>
-                    <div class="ordenes-list" id="ordenes-pending">
-                        <div class="empty-state-small">Sin pedidos</div>
+                    <div id="orders-mesa-pending">
+                        <div class="empty-state"><i class="ri-inbox-line"></i> Sin pedidos</div>
                     </div>
                 </div>
-
-                <div class="ordenes-column ordenes-preparing">
-                    <div class="ordenes-header">
-                        <h3><i class="ri-flashlight-line"></i> Preparando</h3>
-                        <span class="ordenes-count" id="count-mesa-preparing">0</span>
+                <div class="orders-column preparing">
+                    <div class="column-header">
+                        <h6><i class="ri-flashlight-line"></i> Preparando</h6>
+                        <span class="badge-count" id="count-mesa-preparing">0</span>
                     </div>
-                    <div class="ordenes-list" id="ordenes-preparing">
-                        <div class="empty-state-small">Sin pedidos</div>
+                    <div id="orders-mesa-preparing">
+                        <div class="empty-state"><i class="ri-inbox-line"></i> Sin pedidos</div>
                     </div>
                 </div>
-
-                <div class="ordenes-column ordenes-ready">
-                    <div class="ordenes-header">
-                        <h3><i class="ri-check-double-line"></i> Listo</h3>
-                        <span class="ordenes-count" id="count-mesa-ready">0</span>
+                <div class="orders-column ready">
+                    <div class="column-header">
+                        <h6><i class="ri-check-double-line"></i> Listo</h6>
+                        <span class="badge-count" id="count-mesa-ready">0</span>
                     </div>
-                    <div class="ordenes-list" id="ordenes-ready">
-                        <div class="empty-state-small">Sin pedidos</div>
+                    <div id="orders-mesa-ready">
+                        <div class="empty-state"><i class="ri-inbox-line"></i> Sin pedidos</div>
                     </div>
                 </div>
             </div>
-
-            <div class="carrito-actions">
-                <button class="btn btn-secondary" onclick="goBackToMesa()">
-                    <i class="ri-arrow-left-line"></i> Volver a Seleccionar Mesa
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-outline-secondary" onclick="backToMenu()">
+                    <i class="ri-arrow-left-line"></i> Volver al Menú
                 </button>
-                <button class="btn btn-primary" onclick="newOrder()">
+                <button class="btn btn-primary ms-auto" onclick="newOrder()">
                     <i class="ri-shopping-cart-line"></i> Nuevo Pedido
                 </button>
             </div>
-        </section>
-    </main>
-
-    <div id="notification" class="toast" role="alert" aria-live="polite">
-        <div class="toast-content">
-            <i class="ri-check-line"></i>
-            <span id="toast-message">Mensaje</span>
         </div>
     </div>
 
-    <div id="loading-overlay" class="loading-overlay" style="display: none;">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <p>Procesando...</p>
-        </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" style="display: none;">
+        <i class="ri-check-line"></i>
+        <span id="toast-message">Mensaje</span>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="mesero.js"></script>
 </body>
 </html>

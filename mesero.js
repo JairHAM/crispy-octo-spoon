@@ -1,151 +1,131 @@
 const API = 'https://crispy-octo-spoon.onrender.com/api';
-
 let selectedMesa = null;
 let cart = [];
-let allProducts = [];
-let filteredProducts = [];
-let refreshInterval = null;
-let allOrdersRefreshInterval = null;
+let products = [];
 
 async function init() {
     await loadProducts();
+    await loadAllOrders();
     renderMesas();
-    loadAllOrders();
-    startAllOrdersRefresh();
+    setInterval(loadAllOrders, 3000);
 }
 
 async function loadProducts() {
     try {
         const res = await fetch(`${API}/productos`);
-        allProducts = await res.json();
-        filteredProducts = allProducts;
-    } catch (e) {
-        notify('Error cargando menú', true);
+        products = await res.json();
+    } catch (err) {
+        console.error('Error loading products:', err);
+        showToast('Error cargando productos', 'error');
     }
+}
+
+async function loadAllOrders() {
+    try {
+        const res = await fetch(`${API}/pedidos`);
+        const orders = await res.json();
+        displayOrdersByStatus(orders);
+    } catch (err) {
+        console.error('Error loading orders:', err);
+    }
+}
+
+function displayOrdersByStatus(orders) {
+    const pending = [], preparing = [], ready = [];
+    
+    orders.forEach(order => {
+        const item = createOrderCard(order);
+        if (order.estado === 'pendiente') pending.push(item);
+        else if (order.estado === 'preparando') preparing.push(item);
+        else if (order.estado === 'listo') ready.push(item);
+    });
+
+    updateOrderColumn('pending', pending);
+    updateOrderColumn('preparing', preparing);
+    updateOrderColumn('ready', ready);
+}
+
+function createOrderCard(order) {
+    const items = order.items.map(i => `${i.nombre} (${i.cantidad})`).join(', ');
+    const elapsed = getElapsedTime(order.createdAt);
+    
+    return `
+        <div class="order-card">
+            <div class="order-mesa">Mesa ${order.mesa}</div>
+            <div class="order-items">${items}</div>
+            <div class="order-time">${elapsed}</div>
+        </div>
+    `;
+}
+
+function updateOrderColumn(type, items) {
+    const col = document.getElementById(`orders-${type}`);
+    const count = document.getElementById(`count-${type}`);
+    
+    if (!col) return;
+    
+    if (items.length === 0) {
+        col.innerHTML = '<div class="empty-state"><i class="ri-inbox-line"></i> Sin pedidos</div>';
+    } else {
+        col.innerHTML = items.join('');
+    }
+    
+    if (count) count.textContent = items.length;
 }
 
 function renderMesas() {
     const container = document.getElementById('mesas-container');
     container.innerHTML = '';
     
-    for (let i = 1; i <= 20; i++) {
-        const btn = document.createElement('button');
-        btn.className = 'mesa-btn';
-        btn.innerHTML = `<i class="ri-door-line"></i><span>Mesa ${i}</span>`;
-        btn.onclick = () => selectMesa(i);
-        container.appendChild(btn);
+    for (let i = 1; i <= 10; i++) {
+        const div = document.createElement('div');
+        div.className = 'col-6 col-md-4 col-lg-3';
+        div.innerHTML = `
+            <div class="card-mesa" onclick="selectMesa(${i})">
+                <i class="ri-door-line"></i>
+                <div>Mesa ${i}</div>
+            </div>
+        `;
+        container.appendChild(div);
     }
 }
 
 function selectMesa(mesa) {
     selectedMesa = mesa;
-    document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
-    event.target.closest('.mesa-btn').classList.add('active');
-    
-    document.getElementById('current-mesa').textContent = mesa;
-    document.getElementById('mesa-title').textContent = mesa;
-    document.getElementById('mesa-carrito').textContent = mesa;
-    document.getElementById('mesa-ordenes').textContent = mesa;
-    document.getElementById('btn-ver-pedidos').style.display = 'flex';
-    
+    cart = [];
+    updateSectionDisplay(`Mesa ${mesa}`);
     showStep('menu');
-    renderProducts(allProducts);
+    renderProducts();
 }
 
-function showStep(step) {
-    document.querySelectorAll('.step-section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(`step-${step}`).classList.remove('hidden');
-    
-    updateSectionDisplay(step);
-    
-    if (step === 'ordenes') {
-        loadMesaOrders();
-        if (refreshInterval) clearInterval(refreshInterval);
-        refreshInterval = setInterval(() => loadMesaOrders(), 2000);
-    } else {
-        clearRefreshInterval();
-    }
-}
-
-function updateSectionDisplay(step) {
-    const sectionInfo = {
-        'mesa': { icon: 'ri-door-line', name: 'Selecciona Mesa' },
-        'menu': { icon: 'ri-book-line', name: `Menú - Mesa ${selectedMesa}` },
-        'carrito': { icon: 'ri-shopping-cart-line', name: `Tu Pedido - Mesa ${selectedMesa}` },
-        'ordenes': { icon: 'ri-receipt-2-line', name: `Mi Seguimiento - Mesa ${selectedMesa}` }
-    };
-    
-    const info = sectionInfo[step] || sectionInfo['mesa'];
-    const iconElement = document.getElementById('section-icon');
-    const nameElement = document.getElementById('section-name');
-    
-    iconElement.innerHTML = `<i class="${info.icon}"></i>`;
-    nameElement.textContent = info.name;
-}
-
-function renderProducts(products) {
+function renderProducts() {
     const container = document.getElementById('productos-container');
     container.innerHTML = '';
     
-    if (!products.length) {
-        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No hay productos</p>';
-        return;
-    }
-    
     products.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'producto-card';
-        
-        const cartItem = cart.find(item => item._id === p._id);
+        const div = document.createElement('div');
+        div.className = 'col-6 col-md-4 col-lg-3';
+        const cartItem = cart.find(c => c._id === p._id);
         const qty = cartItem ? cartItem.cantidad : 0;
         
-        card.innerHTML = `
-            <div class="producto-title">${p.nombre}</div>
-            <div class="producto-category">${getCategoryEmoji(p.categoria)} ${p.categoria}</div>
-            <div class="producto-price">S/. ${p.precio.toFixed(2)}</div>
-            <div class="producto-quantity">
-                <button class="quantity-btn" onclick="decreaseQty('${p._id}')">−</button>
-                <div class="quantity-display">${qty}</div>
-                <button class="quantity-btn" onclick="increaseQty('${p._id}', '${p.nombre}', ${p.precio})">+</button>
+        div.innerHTML = `
+            <div class="producto-item">
+                <div class="producto-nombre">${p.nombre}</div>
+                <div class="producto-categoria">${p.categoria}</div>
+                <div class="producto-precio">S/. ${p.precio.toFixed(2)}</div>
+                <div class="qty-control">
+                    <button onclick="decreaseQty('${p._id}')">−</button>
+                    <div class="qty-display">${qty}</div>
+                    <button onclick="increaseQty('${p._id}', '${p.nombre}', ${p.precio})">+</button>
+                </div>
             </div>
         `;
-        
-        container.appendChild(card);
+        container.appendChild(div);
     });
-    
-    attachFilterListeners();
-}
-
-function attachFilterListeners() {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            
-            const category = e.target.dataset.category;
-            if (category === 'todas') {
-                filteredProducts = allProducts;
-            } else {
-                filteredProducts = allProducts.filter(p => p.categoria === category);
-            }
-            renderProducts(filteredProducts);
-        });
-    });
-}
-
-function getCategoryEmoji(cat) {
-    const emojis = {
-        'Entrada': '🥗',
-        'Plato Principal': '🍽️',
-        'Bebida': '🥤',
-        'Postre': '🍰',
-        'Otro': '📦'
-    };
-    return emojis[cat] || '📦';
 }
 
 function increaseQty(id, name, price) {
-    const item = cart.find(i => i._id === id);
+    let item = cart.find(c => c._id === id);
     if (item) {
         item.cantidad++;
     } else {
@@ -155,361 +135,215 @@ function increaseQty(id, name, price) {
 }
 
 function decreaseQty(id) {
-    const item = cart.find(i => i._id === id);
+    let item = cart.find(c => c._id === id);
     if (item) {
         item.cantidad--;
-        if (item.cantidad <= 0) {
-            cart = cart.filter(i => i._id !== id);
-        }
+        if (item.cantidad === 0) cart = cart.filter(c => c._id !== id);
     }
     updateCart();
 }
 
 function updateCart() {
-    const cartCount = cart.reduce((sum, item) => sum + item.cantidad, 0);
-    document.getElementById('cart-count').textContent = cartCount;
-    document.getElementById('cart-badge').textContent = cartCount;
-    
-    const cartButton = document.getElementById('cart-button');
-    if (cartCount > 0) {
-        cartButton.style.display = 'flex';
-    } else {
-        cartButton.style.display = 'none';
-    }
-    
-    renderProducts(filteredProducts);
+    document.getElementById('cart-count').textContent = cart.reduce((sum, item) => sum + item.cantidad, 0);
+    renderProducts();
 }
 
-function attachFilterListeners() {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            
-            const category = e.target.dataset.category;
-            if (category === 'todas') {
-                filteredProducts = allProducts;
-            } else {
-                filteredProducts = allProducts.filter(p => p.categoria === category);
-            }
-            renderProducts(filteredProducts);
-        });
+function filterProducts(category) {
+    const filtered = category === 'todas' ? products : products.filter(p => p.categoria === category);
+    
+    document.querySelectorAll('.filter-badge').forEach(b => b.classList.remove('active'));
+    document.querySelector(`[data-category="${category}"]`).classList.add('active');
+    
+    const container = document.getElementById('productos-container');
+    container.innerHTML = '';
+    
+    filtered.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'col-6 col-md-4 col-lg-3';
+        const cartItem = cart.find(c => c._id === p._id);
+        const qty = cartItem ? cartItem.cantidad : 0;
+        
+        div.innerHTML = `
+            <div class="producto-item">
+                <div class="producto-nombre">${p.nombre}</div>
+                <div class="producto-categoria">${p.categoria}</div>
+                <div class="producto-precio">S/. ${p.precio.toFixed(2)}</div>
+                <div class="qty-control">
+                    <button onclick="decreaseQty('${p._id}')">−</button>
+                    <div class="qty-display">${qty}</div>
+                    <button onclick="increaseQty('${p._id}', '${p.nombre}', ${p.precio})">+</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
     });
 }
 
-function backToMenu() {
-    showStep('menu');
-}
-
 function showCart() {
-    if (!cart.length) {
-        notify('Agrega platos al carrito', true);
+    if (cart.length === 0) {
+        showToast('El carrito está vacío', 'error');
         return;
     }
-    
     renderCartItems();
     showStep('carrito');
 }
 
 function renderCartItems() {
     const container = document.getElementById('carrito-items');
-    container.innerHTML = '';
-    
+    let html = '';
     let total = 0;
+    
     cart.forEach(item => {
         const subtotal = item.precio * item.cantidad;
         total += subtotal;
-        
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'carrito-item';
-        itemDiv.innerHTML = `
-            <div class="item-info">
-                <div class="item-name">${item.nombre}</div>
-                <div class="item-qty">Cantidad: ${item.cantidad}</div>
+        html += `
+            <div class="carrito-item">
+                <div class="item-info">
+                    <h6>${item.nombre}</h6>
+                    <small>S/. ${item.precio.toFixed(2)} × ${item.cantidad}</small>
+                </div>
+                <div class="item-price">S/. ${subtotal.toFixed(2)}</div>
+                <button class="btn-delete" onclick="removeFromCart('${item._id}')">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
             </div>
-            <div class="item-price">S/. ${subtotal.toFixed(2)}</div>
-            <button class="item-delete" onclick="removeFromCart('${item._id}')">
-                <i class="ri-delete-bin-line"></i>
-            </button>
         `;
-        container.appendChild(itemDiv);
     });
     
-    const totalDiv = document.createElement('div');
-    totalDiv.className = 'carrito-total';
-    totalDiv.innerHTML = `
-        <span>Total</span>
-        <span>S/. ${total.toFixed(2)}</span>
-    `;
-    container.appendChild(totalDiv);
+    container.innerHTML = html;
+    document.getElementById('total-price').textContent = `S/. ${total.toFixed(2)}`;
 }
 
 function removeFromCart(id) {
-    cart = cart.filter(i => i._id !== id);
+    cart = cart.filter(c => c._id !== id);
     updateCart();
-    if (cart.length === 0) {
-        showStep('menu');
-    } else {
-        renderCartItems();
-    }
+    if (cart.length === 0) showStep('menu');
+    else renderCartItems();
 }
 
 async function sendOrder() {
-    if (!cart.length) {
-        notify('Agrega platos al carrito', true);
-        return;
-    }
+    if (cart.length === 0) return;
     
     try {
-        setLoading(true);
-        
-        const orderData = {
-            mesa: selectedMesa,
-            items: cart,
-            estado: 'pendiente',
-            fechaCreacion: new Date(),
-            horaEstimada: new Date(Date.now() + 30 * 60000)
-        };
+        const items = cart.map(c => ({
+            nombre: c.nombre,
+            cantidad: c.cantidad,
+            precio: c.precio
+        }));
         
         const res = await fetch(`${API}/pedidos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
+            body: JSON.stringify({ mesa: selectedMesa, items })
         });
         
-        if (!res.ok) throw new Error('Error al enviar pedido');
-        
-        notify('✅ Pedido enviado a cocina', false);
-        cart = [];
-        updateCart();
-        
-        setTimeout(() => {
-            loadMesaOrders();
-            showStep('ordenes');
-        }, 1500);
-        
-    } catch (e) {
-        notify(e.message || 'Error al enviar pedido', true);
-    } finally {
-        setLoading(false);
+        if (res.ok) {
+            showToast('Pedido enviado a cocina', 'success');
+            cart = [];
+            await loadAllOrders();
+            viewMesaOrders();
+        }
+    } catch (err) {
+        console.error('Error sending order:', err);
+        showToast('Error enviando pedido', 'error');
     }
+}
+
+function viewMesaOrders() {
+    if (!selectedMesa) {
+        showToast('Selecciona una mesa primero', 'error');
+        return;
+    }
+    
+    fetch(`${API}/pedidos`).then(r => r.json()).then(orders => {
+        const mesaOrders = orders.filter(o => o.mesa === selectedMesa);
+        const pending = [], preparing = [], ready = [];
+        
+        mesaOrders.forEach(order => {
+            const item = createOrderCard(order);
+            if (order.estado === 'pendiente') pending.push(item);
+            else if (order.estado === 'preparando') preparing.push(item);
+            else if (order.estado === 'listo') ready.push(item);
+        });
+        
+        updateMesaOrderColumn('pending', pending);
+        updateMesaOrderColumn('preparing', preparing);
+        updateMesaOrderColumn('ready', ready);
+        showStep('seguimiento');
+    });
+}
+
+function updateMesaOrderColumn(type, items) {
+    const col = document.getElementById(`orders-mesa-${type}`);
+    const count = document.getElementById(`count-mesa-${type}`);
+    
+    if (!col) return;
+    
+    if (items.length === 0) {
+        col.innerHTML = '<div class="empty-state"><i class="ri-inbox-line"></i> Sin pedidos</div>';
+    } else {
+        col.innerHTML = items.join('');
+    }
+    
+    if (count) count.textContent = items.length;
+}
+
+function backToMenu() {
+    showStep('menu');
+}
+
+function newOrder() {
+    selectedMesa = null;
+    cart = [];
+    showStep('inicio');
+    updateSectionDisplay('');
 }
 
 function resetSelection() {
     selectedMesa = null;
     cart = [];
-    updateCart();
-    showStep('mesa');
-    document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('current-mesa').textContent = '-';
-    document.getElementById('btn-ver-pedidos').style.display = 'none';
-    clearRefreshInterval();
+    showStep('inicio');
+    updateSectionDisplay('');
 }
 
-async function loadMesaOrders() {
-    try {
-        const res = await fetch(`${API}/pedidos`);
-        const allOrders = await res.json();
-        
-        const mesaOrders = allOrders.filter(o => o.mesa === selectedMesa);
-        
-        document.getElementById('ordenes-pending').innerHTML = '';
-        document.getElementById('ordenes-preparing').innerHTML = '';
-        document.getElementById('ordenes-ready').innerHTML = '';
-        
-        let countPending = 0, countPreparing = 0, countReady = 0;
-        
-        mesaOrders.forEach(order => {
-            const card = createMesaOrderCard(order);
-            
-            if (order.estado === 'pendiente') {
-                document.getElementById('ordenes-pending').appendChild(card);
-                countPending++;
-            } else if (order.estado === 'preparando') {
-                document.getElementById('ordenes-preparing').appendChild(card);
-                countPreparing++;
-            } else if (order.estado === 'listo') {
-                document.getElementById('ordenes-ready').appendChild(card);
-                countReady++;
-            }
-        });
-        
-        document.getElementById('count-mesa-pending').textContent = countPending;
-        document.getElementById('count-mesa-preparing').textContent = countPreparing;
-        document.getElementById('count-mesa-ready').textContent = countReady;
-        
-        if (countPending === 0 && document.getElementById('ordenes-pending').children.length === 0) {
-            document.getElementById('ordenes-pending').innerHTML = '<div class="empty-state-small">Sin pedidos</div>';
-        }
-        if (countPreparing === 0 && document.getElementById('ordenes-preparing').children.length === 0) {
-            document.getElementById('ordenes-preparing').innerHTML = '<div class="empty-state-small">Sin pedidos</div>';
-        }
-        if (countReady === 0 && document.getElementById('ordenes-ready').children.length === 0) {
-            document.getElementById('ordenes-ready').innerHTML = '<div class="empty-state-small">Sin pedidos</div>';
-        }
-    } catch (e) {
-        console.error('Error cargando pedidos:', e);
+function showStep(step) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(`step-${step}`).classList.add('active');
+    
+    const btnCarrito = document.getElementById('btn-carrito');
+    const btnSeguimiento = document.getElementById('btn-seguimiento');
+    
+    if (step === 'menu') {
+        btnCarrito.style.display = 'block';
+        btnSeguimiento.style.display = 'block';
+    } else {
+        btnCarrito.style.display = 'none';
+        btnSeguimiento.style.display = 'none';
     }
 }
 
-function createMesaOrderCard(order) {
-    const card = document.createElement('div');
-    card.className = 'mesa-order-card';
-    
-    const elapsedTime = getElapsedTime(order.fechaCreacion);
-    const itemsHTML = order.items.map(item => 
-        `<div class="order-item"><span>${item.nombre}</span> <span>x${item.cantidad}</span></div>`
-    ).join('');
-    
-    card.innerHTML = `
-        <div class="order-time">${elapsedTime}</div>
-        <div class="order-items">
-            ${itemsHTML}
-        </div>
-    `;
-    
-    return card;
+function updateSectionDisplay(section) {
+    const display = document.getElementById('section-display');
+    if (section) {
+        display.style.display = 'inline-flex';
+        document.getElementById('section-name').textContent = section;
+    } else {
+        display.style.display = 'none';
+    }
 }
 
 function getElapsedTime(createdAt) {
-    const now = new Date();
-    const created = new Date(createdAt);
-    const diff = Math.floor((now - created) / 1000);
-    
-    if (diff < 60) return `${diff}s`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-    return `${Math.floor(diff / 3600)}h`;
+    const diff = Date.now() - new Date(createdAt).getTime();
+    const mins = Math.floor(diff / 60000);
+    return mins > 0 ? `${mins}m` : 'Ahora';
 }
 
-function goBackToMesa() {
-    selectedMesa = null;
-    cart = [];
-    updateCart();
-    showStep('mesa');
-    document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('current-mesa').textContent = '-';
-    document.getElementById('btn-ver-pedidos').style.display = 'none';
-    clearRefreshInterval();
-}
-
-function newOrder() {
-    cart = [];
-    updateCart();
-    showStep('menu');
-}
-
-function viewMesaOrders() {
-    loadMesaOrders();
-    showStep('ordenes');
-}
-
-function clearRefreshInterval() {
-    if (refreshInterval) {
-        clearInterval(refreshInterval);
-        refreshInterval = null;
-    }
-}
-
-function notify(msg, isError = false) {
-    const toast = document.getElementById('notification');
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.className = `toast ${type}`;
     document.getElementById('toast-message').textContent = msg;
-    
-    toast.classList.remove('error', 'show');
-    toast.classList.add('show', isError ? 'error' : 'success');
-    
-    const icon = toast.querySelector('i');
-    icon.className = isError ? 'ri-close-circle-line' : 'ri-check-circle-line';
-    
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    toast.style.display = 'flex';
+    setTimeout(() => toast.style.display = 'none', 3000);
 }
 
-function setLoading(on) {
-    const overlay = document.getElementById('loading-overlay');
-    if (on) {
-        overlay.style.display = 'flex';
-        overlay.classList.add('show');
-    } else {
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.style.display = 'none', 300);
-    }
-}
-
-async function loadAllOrders() {
-    try {
-        const res = await fetch(`${API}/pedidos`);
-        const allOrders = await res.json();
-        
-        document.getElementById('orders-all-pending').innerHTML = '';
-        document.getElementById('orders-all-preparing').innerHTML = '';
-        document.getElementById('orders-all-ready').innerHTML = '';
-        
-        let countPending = 0, countPreparing = 0, countReady = 0;
-        
-        allOrders.forEach(order => {
-            const card = createAllOrderCard(order);
-            
-            if (order.estado === 'pendiente') {
-                document.getElementById('orders-all-pending').appendChild(card);
-                countPending++;
-            } else if (order.estado === 'preparando') {
-                document.getElementById('orders-all-preparing').appendChild(card);
-                countPreparing++;
-            } else if (order.estado === 'listo') {
-                document.getElementById('orders-all-ready').appendChild(card);
-                countReady++;
-            }
-        });
-        
-        document.getElementById('count-all-pending').textContent = countPending;
-        document.getElementById('count-all-preparing').textContent = countPreparing;
-        document.getElementById('count-all-ready').textContent = countReady;
-        
-        if (countPending === 0) {
-            document.getElementById('orders-all-pending').innerHTML = '<div class="empty-small">—</div>';
-        }
-        if (countPreparing === 0) {
-            document.getElementById('orders-all-preparing').innerHTML = '<div class="empty-small">—</div>';
-        }
-        if (countReady === 0) {
-            document.getElementById('orders-all-ready').innerHTML = '<div class="empty-small">—</div>';
-        }
-    } catch (e) {
-        console.error('Error cargando todos los pedidos:', e);
-    }
-}
-
-function createAllOrderCard(order) {
-    const card = document.createElement('div');
-    card.className = 'order-item-small';
-    
-    const elapsedTime = getElapsedTime(order.fechaCreacion);
-    const itemCount = order.items.reduce((sum, item) => sum + item.cantidad, 0);
-    const itemNames = order.items.map(item => `${item.nombre} x${item.cantidad}`).join(', ');
-    
-    card.innerHTML = `
-        <div class="order-mesa-badge">Mesa ${order.mesa}</div>
-        <div class="order-details">
-            <div class="order-items-list">${itemNames}</div>
-            <div class="order-meta">
-                <span class="order-count">${itemCount} platos</span>
-                <span class="order-time">${elapsedTime}</span>
-            </div>
-        </div>
-    `;
-    
-    return card;
-}
-
-function startAllOrdersRefresh() {
-    if (allOrdersRefreshInterval) clearInterval(allOrdersRefreshInterval);
-    allOrdersRefreshInterval = setInterval(() => loadAllOrders(), 3000);
-}
-
-function stopAllOrdersRefresh() {
-    if (allOrdersRefreshInterval) {
-        clearInterval(allOrdersRefreshInterval);
-        allOrdersRefreshInterval = null;
-    }
-}
-
-document.addEventListener('DOMContentLoaded', init);
+init();
