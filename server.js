@@ -78,7 +78,10 @@ if (process.env.NODE_ENV !== 'production') {
 const limiter = rateLimit({ windowMs: 60 * 1000, max: 200 });
 app.use(limiter);
 
-app.use(express.json({ limit: '10kb' })); 
+app.use(express.json({ limit: '10kb' }));
+
+// Servir archivos estáticos (HTML, CSS, JS)
+app.use(express.static(__dirname));
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Conexión exitosa a MongoDB'))
