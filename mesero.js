@@ -167,9 +167,8 @@ function increaseQty(id, name, price) {
 
 function decreaseQty(id) {
     let item = cart.find(c => c._id === id);
-    if (item) {
+    if (item && item.cantidad > 0) {
         item.cantidad--;
-        if (item.cantidad === 0) cart = cart.filter(c => c._id !== id);
     }
     updateCart();
 }
@@ -265,10 +264,16 @@ function removeFromCart(id) {
 }
 
 async function sendOrder() {
-    if (cart.length === 0) return;
+    // Filtrar items con cantidad > 0
+    const validItems = cart.filter(c => c.cantidad > 0);
+    
+    if (validItems.length === 0) {
+        showToast('Agrega items al carrito', 'error');
+        return;
+    }
     
     try {
-        const items = cart.map(c => ({
+        const items = validItems.map(c => ({
             nombre: c.nombre,
             cantidad: c.cantidad,
             precio: c.precio
