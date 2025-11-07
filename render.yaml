@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: crispy-octo-spoon
+    runtime: node
+    buildCommand: |
+      cd react-app && npm install && npm run build && cd .. && npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
