@@ -32,17 +32,19 @@ async function actualizar() {
     const nuevos = state.detectarNuevosPedidos();
     if (nuevos.length > 0) {
         console.log('🔔 Nuevos pedidos:', nuevos);
-        audioManager.sonidoNuevoPedido();
+        await audioManager.sonidoNuevoPedido();
     }
 
     // Detectar cambios de estado
     const cambios = state.detectarCambiosEstado();
-    Object.entries(cambios).forEach(([id, {de, a}]) => {
+    for (const [id, {de, a}] of Object.entries(cambios)) {
         console.log(`📊 Pedido ${id}: ${de} → ${a}`);
         if (a === 'listo') {
-            audioManager.sonidoListoUrgente();
+            await audioManager.sonidoListoUrgente();
+        } else if (a === 'preparando') {
+            await audioManager.sonidoExito();
         }
-    });
+    }
 
     renderizar();
 }
@@ -103,11 +105,20 @@ async function cambiarEstado(id, nuevoEstado) {
     try {
         await updatePedidoEstado(id, nuevoEstado);
         if (nuevoEstado === 'preparando') {
-            audioManager.sonidoExito();
+            await audioManager.sonidoExito();
         }
         await actualizar();
     } catch (err) {
         console.error('❌ Error:', err);
+    }
+}
+
+function toggleAudio() {
+    const nuevoEstado = !audioManager.estaHabilitado();
+    audioManager.toggle(nuevoEstado);
+    const btn = document.getElementById('btn-audio');
+    if (btn) {
+        btn.classList.toggle('disabled', !nuevoEstado);
     }
 }
 
@@ -121,7 +132,7 @@ function tiempoTranscurrido(fecha) {
 
 // ========== EXPORTAR PARA GLOBAL ==========
 
-window.cocina = { cambiarEstado };
+window.cocina = { cambiarEstado, toggleAudio };
 
 // ========== INICIAR ==========
 

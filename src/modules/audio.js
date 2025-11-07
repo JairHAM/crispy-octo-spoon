@@ -59,12 +59,15 @@ class AudioManager {
             oscillator.frequency.value = frecuencia;
             oscillator.type = tipo;
 
-            // Volumen (suave)
-            gain.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duracion / 1000);
+            // Volumen (suave con fade out lineal, más seguro que exponencial)
+            const startTime = this.audioContext.currentTime;
+            const endTime = startTime + duracion / 1000;
+            
+            gain.gain.setValueAtTime(0.3, startTime);
+            gain.gain.linearRampToValueAtTime(0.01, endTime);
 
-            oscillator.start(this.audioContext.currentTime);
-            oscillator.stop(this.audioContext.currentTime + duracion / 1000);
+            oscillator.start(startTime);
+            oscillator.stop(endTime);
         } catch (err) {
             console.error('❌ Error reproduciendo beep:', err);
         }

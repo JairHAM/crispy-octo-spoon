@@ -239,6 +239,15 @@ function nuevoPedido() {
     mostrarPaso('inicio');
 }
 
+function toggleAudio() {
+    const nuevoEstado = !audioManager.estaHabilitado();
+    audioManager.toggle(nuevoEstado);
+    const btn = document.getElementById('btn-audio');
+    if (btn) {
+        btn.classList.toggle('disabled', !nuevoEstado);
+    }
+}
+
 // ========== EXPORTAR PARA GLOBAL ==========
 
 window.mesero = {
@@ -250,7 +259,8 @@ window.mesero = {
     enviarPedido,
     verMesaOrdenes,
     volver,
-    nuevoPedido
+    nuevoPedido,
+    toggleAudio
 };
 
 // ========== INICIAR ==========

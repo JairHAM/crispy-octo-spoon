@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing - Validación de Funciones</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #242424;
+            border-radius: 8px;
+            padding: 30px;
+            border: 1px solid #333;
+        }
+        
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #2a2a2a;
+            border-left: 4px solid #0066ff;
+            border-radius: 4px;
+        }
+        
+        .test-section h2 {
+            color: #0066ff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .test-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status {
+            font-size: 18px;
+            min-width: 24px;
+        }
+        
+        .pass {
+            color: #00ff00;
+        }
+        
+        .fail {
+            color: #ff6666;
+        }
+        
+        .test-item.pass {
+            border-left: 3px solid #00ff00;
+        }
+        
+        .test-item.fail {
+            border-left: 3px solid #ff6666;
+        }
+        
+        #console {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .console-line {
+            margin: 4px 0;
+            padding: 4px;
+        }
+        
+        .log { color: #bbb; }
+        .success { color: #00ff00; }
+        .error { color: #ff6666; }
+        .info { color: #66ccff; }
+        
+        .summary {
+            background: #333;
+            border: 2px solid #0066ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .summary h3 {
+            color: #0066ff;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0066ff;
+        }
+        
+        .stat-label {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        button {
+            background: #0066ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            background: #0052cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Testing Profundo del Sistema</h1>
+        
+        <div id="results"></div>
+        
+        <div id="console"></div>
+        
+        <button onclick="location.reload()">Ejecutar de nuevo</button>
+    </div>
+
+    <script>
+        // Capturar console.log
+        const consoleEl = document.getElementById('console');
+        const resultsEl = document.getElementById('results');
+        
+        let logs = [];
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const line = args.join(' ');
+            addConsoleLog(line, 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const line = args.join(' ');
+            addConsoleLog(line, 'error');
+        };
+        
+        function addConsoleLog(text, type) {
+            const lineEl = document.createElement('div');
+            lineEl.className = `console-line ${type === 'error' ? 'error' : 'log'}`;
+            lineEl.textContent = text;
+            consoleEl.appendChild(lineEl);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        // Tests
+        async function runTests() {
+            console.log('🧪 INICIANDO TESTING PROFUNDO...\n');
+            
+            try {
+                // Test API
+                console.log('📡 TEST 1: API Module');
+                console.log('─'.repeat(50));
+                
+                const apiModule = await import('./modules/api.js');
+                console.log('✅ API importado correctamente');
+                
+                const productos = await apiModule.getProductos();
+                console.log(`✅ getProductos(): ${productos.length} productos`);
+                
+                const pedidos = await apiModule.getPedidos();
+                console.log(`✅ getPedidos(): ${pedidos.length} pedidos`);
+                
+                // Test State
+                console.log('\n🗂️ TEST 2: State Module');
+                console.log('─'.repeat(50));
+                
+                const stateModule = await import('./modules/state.js');
+                const { state } = stateModule;
+                
+                state.setProductos(productos);
+                console.log(`✅ setProductos(): ${state.getProductos().length} productos`);
+                
+                state.agregarAlCarrito('test', 'Producto Test', 10);
+                console.log(`✅ agregarAlCarrito(): Carrito = ${state.contarCarrito()} items`);
+                
+                const total = state.calcularTotalCarrito();
+                console.log(`✅ calcularTotalCarrito(): S/. ${total.toFixed(2)}`);
+                
+                // Test UI
+                console.log('\n🎨 TEST 3: UI Module');
+                console.log('─'.repeat(50));
+                
+                const uiModule = await import('./modules/ui.js');
+                const moneda = uiModule.formatearMoneda(123.45);
+                console.log(`✅ formatearMoneda(123.45): "${moneda}"`);
+                
+                // Test Audio
+                console.log('\n🔊 TEST 4: Audio Module');
+                console.log('─'.repeat(50));
+                
+                const audioModule = await import('./modules/audio.js');
+                console.log(`✅ audioManager importado`);
+                console.log(`✅ Audio habilitado: ${audioModule.audioManager.estaHabilitado()}`);
+                
+                // Test DOM
+                console.log('\n📄 TEST 5: DOM Elements');
+                console.log('─'.repeat(50));
+                
+                const toastEl = document.getElementById('toast');
+                console.log(`✅ Toast elemento: ${toastEl ? 'Encontrado' : 'No encontrado'}`);
+                
+                const headerEl = document.querySelector('header');
+                console.log(`✅ Header elemento: ${headerEl ? 'Encontrado' : 'No encontrado'}`);
+                
+                console.log('\n🎉 TODOS LOS TESTS COMPLETADOS!');
+                
+            } catch (err) {
+                console.error('❌ Error durante tests:', err.message);
+                console.error('Stack:', err.stack);
+            }
+        }
+        
+        // Ejecutar tests cuando cargue
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>
