@@ -83,17 +83,7 @@ app.use(limiter);
 
 app.use(express.json({ limit: '10kb' }));
 
-// Servir build de React primero (si existe)
-const path = require('path');
-const reactBuildPath = path.join(__dirname, 'react-app', 'dist');
-app.use(express.static(reactBuildPath));
-
-// Fallback a index.html de React para SPA (catch-all)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(reactBuildPath, 'index.html'));
-});
-
-// Servir archivos estáticos antigüos (src/)
+// Servir archivos estáticos (HTML, CSS, JS)
 app.use(express.static(__dirname));
 
 mongoose.connect(process.env.MONGO_URI)
