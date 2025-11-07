@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocina - Pedidos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Notificación -->
+        <div id="toast" class="toast" style="display: none;">
+            <span id="toast-message"></span>
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <h1>🍳 COCINA</h1>
+            <button id="btn-audio" onclick="cocina.toggleAudio()" class="btn-audio">🔊</button>
+        </header>
+
+        <!-- Columnas de estados -->
+        <main class="grid-3cols">
+            <div class="columna">
+                <h2>PENDIENTE</h2>
+                <div id="col-pendiente" class="columna-contenido"></div>
+            </div>
+
+            <div class="columna">
+                <h2>PREPARANDO</h2>
+                <div id="col-preparando" class="columna-contenido"></div>
+            </div>
+
+            <div class="columna">
+                <h2>LISTOS</h2>
+                <div id="col-listo" class="columna-contenido"></div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="pages/cocina.js"></script>
+</body>
+</html>

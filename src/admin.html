@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gestión de Productos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Notificación -->
+        <div id="toast" class="toast" style="display: none;">
+            <span id="toast-message"></span>
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <h1>🏪 Admin - Productos</h1>
+        </header>
+
+        <!-- Main -->
+        <main>
+            <!-- Sección: Listar -->
+            <section data-paso="listar" style="display: block;">
+                <h2>Productos</h2>
+                <button onclick="admin.editar(null)" class="btn btn-primary">+ Nuevo Producto</button>
+
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productos-tabla"></tbody>
+                </table>
+            </section>
+
+            <!-- Sección: Crear/Editar -->
+            <section data-paso="editar" style="display: none;">
+                <h2>Producto</h2>
+                <form onsubmit="event.preventDefault(); admin.guardarEdicion();">
+                    <input type="hidden" id="producto-id">
+
+                    <div class="form-group">
+                        <label>Nombre *</label>
+                        <input type="text" id="nombre" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Precio *</label>
+                        <input type="number" id="precio" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoría *</label>
+                        <input type="text" id="categoria" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <input type="text" id="descripcion">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                        <button type="button" onclick="admin.cancelarEdicion()" class="btn">Cancelar</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="pages/admin.js"></script>
+</body>
+</html>

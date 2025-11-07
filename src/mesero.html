@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesero - POS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Notificación -->
+        <div id="toast" class="toast" style="display: none;">
+            <span id="toast-message"></span>
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <h1>👨‍💼 MESERO</h1>
+            <div id="cart-count" class="badge">0</div>
+        </header>
+
+        <!-- Paso 1: Seleccionar Mesa -->
+        <section data-paso="inicio" style="display: block;">
+            <h2>Selecciona una Mesa</h2>
+            <div id="mesas-container" class="grid-mesas"></div>
+        </section>
+
+        <!-- Paso 2: Menú de Productos -->
+        <section data-paso="menu" style="display: none;">
+            <header class="menu-header">
+                <button onclick="mesero.nuevoPedido()" class="btn">← Atrás</button>
+                <h2>Menú</h2>
+                <button onclick="mesero.verCarrito()" class="btn btn-primary">🛒</button>
+            </header>
+            <div id="productos-container" class="grid-productos"></div>
+        </section>
+
+        <!-- Paso 3: Carrito -->
+        <section data-paso="carrito" style="display: none;">
+            <header class="menu-header">
+                <button onclick="mesero.volver()" class="btn">← Volver</button>
+                <h2>Carrito</h2>
+            </header>
+            <div id="carrito-items" class="carrito-items"></div>
+            <div class="carrito-total">
+                <strong>Total: <span id="total-price">S/. 0.00</span></strong>
+                <button onclick="mesero.enviarPedido()" class="btn btn-success">Enviar a Cocina</button>
+            </div>
+        </section>
+
+        <!-- Paso 4: Monitoreo -->
+        <section data-paso="seguimiento" style="display: none;">
+            <header class="menu-header">
+                <button onclick="mesero.nuevoPedido()" class="btn">← Nueva orden</button>
+                <h2>Monitoreo</h2>
+            </header>
+
+            <div class="grid-3cols">
+                <div class="columna">
+                    <h3>PENDIENTE</h3>
+                    <div id="orders-mesa-pendiente" class="columna-contenido"></div>
+                </div>
+
+                <div class="columna">
+                    <h3>PREPARANDO</h3>
+                    <div id="orders-mesa-preparando" class="columna-contenido"></div>
+                </div>
+
+                <div class="columna">
+                    <h3>LISTO</h3>
+                    <div id="orders-mesa-listo" class="columna-contenido"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+
+    <script type="module" src="pages/mesero.js"></script>
+</body>
+</html>
