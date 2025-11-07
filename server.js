@@ -83,12 +83,34 @@ app.use(limiter);
 
 app.use(express.json({ limit: '10kb' }));
 
-// Servir archivos estáticos (HTML, CSS, JS)
+// Servir React build primero (si existe) 
+const path = require('path');
+const reactDist = path.join(__dirname, 'react-app', 'dist');
+const fs = require('fs');
+
+if (fs.existsSync(reactDist)) {
+  app.use(express.static(reactDist));
+  // SPA fallback: cualquier ruta desconocida va a index.html
+  app.use((req, res, next) => {
+    if (!req.path.startsWith('/api') && req.method === 'GET') {
+      res.sendFile(path.join(reactDist, 'index.html'));
+    } else {
+      next();
+    }
+  });
+}
+
+// Fallback a archivos estáticos antiguos (vanilla JS)
 app.use(express.static(__dirname));
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Conexión exitosa a MongoDB'))
-  .catch(err => console.error('Error de conexión a MongoDB:', err));
+// Conectar a MongoDB solo si hay URI disponible
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('Conexión exitosa a MongoDB'))
+    .catch(err => console.error('Error de conexión a MongoDB:', err));
+} else {
+  console.warn('MONGO_URI no configurado - DB conectada via Render.com');
+}
 
 const productosRouter = require('./routes/productos');
 app.use('/api/productos', productosRouter);
