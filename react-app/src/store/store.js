@@ -16,30 +16,48 @@ export const useStore = create((set, get) => ({
   // Acciones - Productos
   setProductos: (productos) => set({ productos }),
   
-  async cargarProductos() {
-    const productos = await api.getProductos();
-    set({ productos });
+  cargarProductos: async () => {
+    try {
+      const productos = await api.getProductos();
+      set({ productos });
+    } catch (err) {
+      console.error('Error cargando productos:', err);
+    }
   },
 
   // Acciones - Pedidos
   setPedidos: (pedidos) => set({ pedidos }),
   
-  async cargarPedidos() {
-    const pedidos = await api.getPedidos();
-    set({ pedidos });
+  cargarPedidos: async () => {
+    try {
+      const pedidos = await api.getPedidos();
+      set({ pedidos });
+    } catch (err) {
+      console.error('Error cargando pedidos:', err);
+    }
   },
 
-  async crearPedido(pedido) {
-    const nuevoPedido = await api.createPedido(pedido);
-    const pedidos = await api.getPedidos();
-    set({ pedidos, carrito: {} });
-    return nuevoPedido;
+  crearPedido: async (pedido) => {
+    try {
+      const nuevoPedido = await api.createPedido(pedido);
+      const pedidos = await api.getPedidos();
+      set({ pedidos, carrito: {} });
+      return nuevoPedido;
+    } catch (err) {
+      console.error('Error creando pedido:', err);
+      throw err;
+    }
   },
 
-  async cambiarEstadoPedido(id, estado) {
-    await api.updatePedidoEstado(id, estado);
-    const pedidos = await api.getPedidos();
-    set({ pedidos });
+  cambiarEstadoPedido: async (id, estado) => {
+    try {
+      await api.updatePedidoEstado(id, estado);
+      const pedidos = await api.getPedidos();
+      set({ pedidos });
+    } catch (err) {
+      console.error('Error cambiando estado:', err);
+      throw err;
+    }
   },
 
   // Acciones - Carrito

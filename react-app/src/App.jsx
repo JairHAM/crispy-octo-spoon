@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useStore } from './store/store';
+import Header from './components/Header';
 import AdminPage from './pages/AdminPage';
 import CocinaPage from './pages/CocinaPage';
 import MeseroPage from './pages/MeseroPage';
@@ -15,6 +16,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <Header />
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/cocina" element={<CocinaPage />} />

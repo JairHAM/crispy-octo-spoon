@@ -5,7 +5,11 @@
  * Patrón: Cada función = 1 endpoint
  */
 
-const API_BASE = 'https://crispy-octo-spoon.onrender.com/api';
+// Detectar entorno: desarrollo vs producción
+const isDevelopment = import.meta.env.DEV;
+const API_BASE = isDevelopment 
+  ? 'http://localhost:3000/api'
+  : 'https://crispy-octo-spoon.onrender.com/api';
 
 // ========== PRODUCTOS ==========
 
