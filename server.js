@@ -14,7 +14,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: ['https://jairham.github.io', 'https://crispy-octo-spoon.onrender.com', 'http://localhost:3000'],
+    origin: ['https://jairham.github.io', 'https://crispy-octo-spoon.onrender.com', 'http://localhost:3000', 'http://localhost:5173'],
     methods: ['GET', 'POST']
   }
 });
@@ -27,7 +27,8 @@ app.set('trust proxy', 1);
 const allowedOrigins = [
   'https://jairham.github.io',
   'https://crispy-octo-spoon.onrender.com',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://localhost:5173'  // Vite dev server
 ];
 
 const corsOptions = {
